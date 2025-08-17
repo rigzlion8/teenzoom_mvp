@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     config.externals = [...(config.externals || []), '@prisma/client']
     return config
+  },
+  experimental: {
+    optimizePackageImports: ['tailwindcss']
   }
 };
 
