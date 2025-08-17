@@ -28,43 +28,7 @@ export const useSocket = (roomId: string): UseSocketReturn => {
   useEffect(() => {
     if (!session?.user) return
 
-    // Check if we're in a production environment (Vercel)
-    const isProduction = process.env.NODE_ENV === 'production'
-    
-    if (isProduction) {
-      console.log('Running in production - Socket.IO WebSockets not supported on Vercel')
-      // In production, we'll implement a fallback using Server-Sent Events or polling
-      // For now, we'll simulate connection for UI purposes
-      setIsConnected(true)
-      
-      // Simulate some initial messages for demo purposes
-      const demoMessages: ChatMessage[] = [
-        {
-          id: 'demo-1',
-          content: 'Welcome to TeenZoom v2.0! This is a demo message since real-time chat requires a different hosting solution.',
-          userId: 'system',
-          username: 'system',
-          displayName: 'System',
-          roomId,
-          messageType: 'text',
-          createdAt: new Date(Date.now() - 60000)
-        },
-        {
-          id: 'demo-2',
-          content: 'For full real-time functionality, consider deploying to a platform that supports WebSockets like Railway, Render, or DigitalOcean.',
-          userId: 'system',
-          username: 'system',
-          displayName: 'System',
-          roomId,
-          messageType: 'text',
-          createdAt: new Date()
-        }
-      ]
-      setMessages(demoMessages)
-      return
-    }
-
-    // Initialize Socket.IO server first (only in development)
+    // Initialize Socket.IO server first
     const initSocketServer = async () => {
       try {
         await fetch('/api/socket/io')
@@ -195,26 +159,10 @@ export const useSocket = (roomId: string): UseSocketReturn => {
 
   // Send message function
   const sendMessage = useCallback((content: string, roomId: string, messageType: 'text' | 'image' | 'video' | 'audio' | 'file' = 'text') => {
-    if (process.env.NODE_ENV === 'production') {
-      // In production, add message locally since WebSockets aren't available
-      const newMessage: ChatMessage = {
-        id: `local-${Date.now()}`,
-        content,
-        userId: session?.user?.id || 'unknown',
-        username: session?.user?.username || 'unknown',
-        displayName: session?.user?.displayName || 'Unknown User',
-        roomId,
-        messageType,
-        createdAt: new Date()
-      }
-      setMessages(prev => [...prev, newMessage])
-      return
-    }
-    
     if (socket && isConnected) {
       socket.emit('send_message', { content, roomId, messageType })
     }
-  }, [socket, isConnected, session?.user])
+  }, [socket, isConnected])
 
   // Join room function
   const joinRoom = useCallback((roomId: string) => {
