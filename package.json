@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/paystack": "^2.0.4",
     "@types/react": "^19",
