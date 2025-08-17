@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     // Generate unique reference
     const reference = `TZ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
-    // Convert amount to kobo (Paystack uses kobo as smallest unit)
-    const amountInKobo = Math.round(amount * 100)
+    // Convert amount to cents (Paystack uses cents as smallest unit)
+    const amountInCents = Math.round(amount * 100)
 
     const paymentData = {
-      amount: amountInKobo,
+      amount: amountInCents,
       email: session.user.email || '',
       reference,
       callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payments/verify?reference=${reference}`,

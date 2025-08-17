@@ -170,7 +170,7 @@ export const verifyPayment = async (reference: string): Promise<PaymentVerificat
       message: 'Payment verified successfully',
       data: {
         reference,
-        amount: 150000, // 1500 NGN in kobo
+        amount: 150000, // 1500 KES in cents
         status: 'success',
         gateway_response: 'Approved',
         paid_at: new Date().toISOString(),
@@ -202,7 +202,7 @@ export const getTransaction = async (id: number): Promise<Transaction> => {
       id,
       domain: 'test',
       amount: 150000,
-      currency: 'NGN',
+      currency: 'KES',
       source: 'card',
       reason: 'VIP purchase',
       recipient: 1,

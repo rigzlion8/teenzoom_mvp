@@ -132,7 +132,7 @@ model Friendship {
 model Payment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   amount      Float
-  currency    String   @default("NGN")
+  currency    String   @default("KES")
   paymentType PaymentType
   status      PaymentStatus @default(pending)
   paystackRef String?  @unique

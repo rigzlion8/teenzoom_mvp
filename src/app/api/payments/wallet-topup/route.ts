@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate amount range (e.g., 100 NGN to 100,000 NGN)
+    // Validate amount range (e.g., 100 KES to 100,000 KES)
     if (amount < 100 || amount > 100000) {
       return NextResponse.json(
-        { message: "Amount must be between ₦100 and ₦100,000" },
+        { message: "Amount must be between KSh 100 and KSh 100,000" },
         { status: 400 }
       )
     }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       authorization_url: result.authorization_url,
       reference: result.reference,
       amount: amount,
-      currency: 'NGN'
+              currency: 'KES'
     })
 
   } catch (error) {

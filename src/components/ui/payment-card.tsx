@@ -130,7 +130,7 @@ export const paymentPlans: PaymentPlan[] = [
     name: 'Basic',
     description: 'Perfect for getting started',
     price: 500,
-    currency: '₦',
+    currency: 'KSh',
     coins: 50,
     features: [
       '50 coins',
@@ -144,7 +144,7 @@ export const paymentPlans: PaymentPlan[] = [
     name: 'VIP',
     description: 'Enhanced features and benefits',
     price: 1500,
-    currency: '₦',
+    currency: 'KSh',
     coins: 150,
     features: [
       '150 coins',
@@ -161,7 +161,7 @@ export const paymentPlans: PaymentPlan[] = [
     name: 'Premium',
     description: 'Ultimate TeenZoom experience',
     price: 3000,
-    currency: '₦',
+    currency: 'KSh',
     coins: 300,
     features: [
       '300 coins',

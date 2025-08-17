@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       case 'wallet_topup':
         // For wallet top-ups, add coins based on amount
         const topupAmount = data.metadata?.amount as number || 0
-        const coinsToAdd = Math.floor(topupAmount / 10) // 1 coin per 10 NGN
+        const coinsToAdd = Math.floor(topupAmount / 10) // 1 coin per 10 KES
         updateData.coins = { increment: coinsToAdd }
         break
       case 'coins':
@@ -85,8 +85,8 @@ export async function GET(request: NextRequest) {
     // Create payment record
     const payment = await prisma.payment.create({
       data: {
-        amount: data.amount / 100, // Convert from kobo to naira
-        currency: 'NGN',
+        amount: data.amount / 100, // Convert from cents to shillings
+        currency: 'KES',
         paymentType: plan === 'wallet_topup' ? 'wallet_topup' : 'vip_purchase',
         status: 'successful',
         paystackRef: data.reference,
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         displayName: updatedUser.displayName,
         email: updatedUser.email || '',
         amount: data.amount / 100,
-        currency: 'NGN',
+        currency: 'KES',
         plan: plan === 'wallet_topup' ? 'Wallet Top-up' : plan,
         transactionId: payment.id,
         paymentDate: new Date().toLocaleDateString()
