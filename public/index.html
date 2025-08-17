@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>TeenZoom</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="auth" class="card">
+      <h1>TeenZoom</h1>
+      <input id="username" placeholder="Username" />
+      <input id="displayName" placeholder="Display name (optional)" />
+      <input id="password" type="password" placeholder="Password" />
+      <div class="row">
+        <button id="signupBtn">Sign up</button>
+        <button id="loginBtn">Log in</button>
+      </div>
+      <div id="authMsg" class="muted"></div>
+    </div>
+
+    <div id="app" style="display:none;">
+      <header class="top">
+        <h2 id="roomTitle">general</h2>
+        <div class="right">
+          <span id="coins">Coins: 0</span>
+          <span id="xp">XP: 0</span>
+          <button id="vipBtn">VIP Shop</button>
+          <button id="logoutBtn">Logout</button>
+        </div>
+      </header>
+
+      <main class="main">
+        <aside class="sidebar">
+          <h3>Profile</h3>
+          <div id="meBox" class="me"></div>
+          <h3>Rooms</h3>
+          <ul id="roomsList"></ul>
+          <h3>YouTube</h3>
+          <input id="videoUrl" placeholder="YouTube URL" />
+          <button id="addVideoBtn">Add Video</button>
+          <div id="videoList"></div>
+          <h3>Leaderboards</h3>
+          <div class="row">
+            <button id="lbXpBtn">Top XP</button>
+            <button id="lbLikesBtn">Most Liked</button>
+          </div>
+          <ol id="leaderboard"></ol>
+        </aside>
+
+        <section class="chat">
+          <ul id="messages"></ul>
+          <div id="typing" class="muted"></div>
+          <div class="composer">
+            <emoji-picker id="picker"></emoji-picker>
+            <input id="msgInput" placeholder="Type a message (use /w @user, /friend @user, /like @user, /ttt @user, /place 0-8, /trivia, /answer … , @bot help, /kick @user, /ban @user, /mute @user 10)"/>
+            <button id="sendBtn">Send</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="shop" class="modal" style="display:none;">
+      <div class="modal-inner">
+        <h3>VIP Shop</h3>
+        <p>Monthly VIP — 3,000 coins (30 days)</p>
+        <button id="buyMonthly">Buy Monthly (3000 coins)</button>
+        <p>Lifetime VIP — 15,000 coins OR $15 via card</p>
+        <button id="buyLifetimeCoins">Buy Lifetime (15000 coins)</button>
+        <button id="buyLifetimeCard">$15 Lifetime (Stripe)</button>
+        <button id="closeShop">Close</button>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1.8.0/index.js" defer></script>
+  </body>
+</html>
