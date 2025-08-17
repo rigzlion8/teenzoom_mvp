@@ -1,0 +1,226 @@
+// TeenZoom v2.0 Prisma Schema
+// MongoDB + Next.js 15 + React + Redis + Paystack + Resend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  username     String   @unique
+  email        String?  @unique
+  displayName  String
+  passwordHash String
+  role         Role     @default(user)
+  coins        Int      @default(100)
+  vipLifetime  Boolean  @default(false)
+  xp           Int      @default(0)
+  level        Int      @default(1)
+  avatar       String?
+  bio          String?
+  isOnline     Boolean  @default(false)
+  lastSeen     DateTime @default(now())
+  resetToken   String?
+  resetTokenExpiry DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  messages     Message[]
+  rooms       RoomMember[]
+  friends     Friendship[]
+  friendOf    Friendship[] @relation("FriendOf")
+  sentPayments Payment[]   @relation("Sender")
+  receivedPayments Payment[] @relation("Receiver")
+  moderationLogs ModerationLog[]
+
+  @@map("users")
+}
+
+model Room {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId     String   @unique
+  name       String
+  description String?
+  isPrivate  Boolean  @default(false)
+  maxUsers   Int      @default(50)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  members    RoomMember[]
+  messages   Message[]
+  videos     RoomVideo[]
+
+  @@map("rooms")
+}
+
+model RoomMember {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  roomId    String   @db.ObjectId
+  role      MemberRole @default(member)
+  joinedAt  DateTime @default(now())
+  isActive  Boolean  @default(true)
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
+  @@map("room_members")
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  userId    String   @db.ObjectId
+  roomId    String   @db.ObjectId
+  messageType MessageType @default(text)
+  fileUrl   String?
+  fileName  String?
+  fileSize  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model RoomVideo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  description String?
+  videoUrl  String
+  thumbnailUrl String?
+  duration  Int?
+  roomId    String   @db.ObjectId
+  uploadedBy String  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_videos")
+}
+
+model Friendship {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  friendId  String   @db.ObjectId
+  status    FriendshipStatus @default(pending)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
+model Payment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount      Float
+  currency    String   @default("NGN")
+  paymentType PaymentType
+  status      PaymentStatus @default(pending)
+  paystackRef String?  @unique
+  senderId    String   @db.ObjectId
+  receiverId  String   @db.ObjectId
+  description String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model ModerationLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  action      ModerationAction
+  targetType  TargetType
+  targetId    String
+  moderatorId String   @db.ObjectId
+  reason      String?
+  details     Json?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  moderator  User     @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@map("moderation_logs")
+}
+
+// Enums
+enum Role {
+  user
+  moderator
+  admin
+}
+
+enum MemberRole {
+  member
+  moderator
+  admin
+}
+
+enum MessageType {
+  text
+  image
+  video
+  audio
+  file
+}
+
+enum FriendshipStatus {
+  pending
+  accepted
+  rejected
+  blocked
+}
+
+enum PaymentType {
+  coin_transfer
+  vip_purchase
+  room_creation
+  wallet_topup
+  custom
+}
+
+enum PaymentStatus {
+  pending
+  successful
+  failed
+  cancelled
+}
+
+enum ModerationAction {
+  warn
+  mute
+  kick
+  ban
+  delete_message
+  delete_room
+}
+
+enum TargetType {
+  user
+  message
+  room
+  video
+}

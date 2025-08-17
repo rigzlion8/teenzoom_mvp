@@ -1,38 +1,53 @@
-# TeenZoom 2.0 — Full Stack Real-time Chat Application
+# TeenZoom v2.0 🚀
 
-A feature-rich real-time chat application built with Node.js, Express, Socket.IO, MongoDB, and Stripe integration.
+**Next Generation Teen Social Platform**
 
-## Features
+A modern, secure, and feature-rich social platform built for teens with cutting-edge technology.
 
-- **Authentication**: User signup/login with JWT tokens
-- **Real-time Chat**: Live messaging with Socket.IO
-- **VIP System**: Monthly (3,000 coins) and Lifetime (15,000 coins or $15 via Stripe)
-- **Virtual Economy**: Coins earned at 1 per minute while online
-- **XP System**: Experience points for chatting and winning games
-- **Games**: Tic-tac-toe and trivia with XP rewards
-- **Social Features**: Friend requests, private messages, likes
-- **Moderation**: Kick, ban, mute commands for admins
-- **YouTube Integration**: Share and manage videos in rooms
-- **Leaderboards**: Top XP and most liked users
-- **Responsive Design**: Mobile-friendly interface
-- **Admin Panel**: Seeded admin user with full permissions
+## ✨ Features
 
-## Tech Stack
+- **Real-time Chat**: Instant messaging with friends in private or public rooms
+- **Video Sharing**: Share and watch videos with your community
+- **Community Building**: Join rooms, make friends, and build connections
+- **Rewards System**: Earn coins, XP, and unlock VIP features
+- **Safe & Secure**: Built with security and moderation in mind
+- **Lightning Fast**: Built with Next.js 15 and modern technologies
 
-- **Backend**: Node.js, Express, Socket.IO
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT, bcrypt
-- **File Uploads**: Multer
-- **Payments**: Stripe integration
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Real-time**: Socket.IO for live updates
+## 🛠️ Tech Stack
 
-## Quick Start
+### Frontend
+- **Next.js 15** - App Router, Server Components, Server Actions
+- **React 19** - Latest React with concurrent features
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - Beautiful, accessible UI components
+- **Framer Motion** - Smooth animations and transitions
+
+### Backend
+- **Next.js API Routes** - Serverless API endpoints
+- **NextAuth.js** - Authentication and session management
+- **Prisma** - Type-safe database ORM
+- **MongoDB** - NoSQL database for scalability
+- **Redis** - In-memory data store for caching and sessions
+
+### Payment & Communication
+- **Paystack** - Nigerian payment gateway
+- **Resend** - Modern email API for notifications
+- **Cloudinary** - Cloud-based media management
+
+### Development & Deployment
+- **ESLint** - Code quality and consistency
+- **Prettier** - Code formatting
+- **Vercel** - Deployment and hosting
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (local or cloud instance)
-- Stripe account (optional, for payments)
+- Node.js 18+ 
+- MongoDB database
+- Redis instance
+- Paystack account
+- Resend account
 
 ### Installation
 
@@ -40,6 +55,7 @@ A feature-rich real-time chat application built with Node.js, Express, Socket.IO
    ```bash
    git clone <your-repo-url>
    cd teenzoom_mvp
+   git checkout teenzoomv2.0
    ```
 
 2. **Install dependencies**
@@ -47,183 +63,174 @@ A feature-rich real-time chat application built with Node.js, Express, Socket.IO
    npm install
    ```
 
-3. **Environment setup**
+3. **Set up environment variables**
    ```bash
    cp .env.example .env
-   ```
-   
-   Edit `.env` file with your configuration:
-   ```env
-   PORT=4000
-   MONGO_URI=mongodb://127.0.0.1:27017/teenzoom
-   JWT_SECRET=your_very_secure_jwt_secret_here
-   CLIENT_URL=http://localhost:4000
-   PUBLIC_URL=http://localhost:4000
-   UPLOAD_DIR=./uploads
-   STRIPE_SECRET_KEY=sk_test_your_stripe_key_here
+   # Edit .env with your actual values
    ```
 
-4. **Start MongoDB**
+4. **Set up the database**
    ```bash
-   # Local MongoDB
-   mongod
-   
-   # Or use MongoDB Atlas cloud instance
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed
    ```
 
-5. **Run the application**
+5. **Start the development server**
    ```bash
-   # Development mode
    npm run dev
-   
-   # Production mode
-   npm start
    ```
 
-6. **Access the application**
-   - Open `http://localhost:4000` in your browser
-   - Use the seeded admin account:
-     - Username: `Crosslow7`
-     - Password: `gtrsupra20252026`
+6. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-## Commands & Features
+## 🔧 Environment Variables
 
-### Chat Commands
-- `/w @username message` - Send private message
-- `/friend @username` - Send friend request
-- `/like @username` - Give a like to a user
-- `/ttt @username` - Start tic-tac-toe game
-- `/place 0-8` - Make a move in tic-tac-toe
-- `/trivia` - Start trivia game
-- `/answer text` - Answer trivia question
-- `@bot help` - Get bot assistance
+Create a `.env` file in the root directory:
 
-### Moderation Commands (Admin/Mod only)
-- `/kick @username` - Kick user from room
-- `/ban @username` - Ban user from room
-- `/mute @username [minutes]` - Mute user temporarily
-
-### Game Instructions
-- **Tic-tac-toe**: Use `/ttt @username` to challenge, then `/place 0-8` for moves
-- **Trivia**: Use `/trivia` to start, then `/answer your_answer` to respond
-- **Board positions**: 0-8 representing 3x3 grid (0=top-left, 8=bottom-right)
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/login` - User login
-
-### User Management
-- `GET /api/me` - Get current user profile
-- `POST /api/upload/avatar` - Upload avatar image
-- `POST /api/upload/status` - Update status/theme
-
-### VIP & Payments
-- `POST /api/vip/purchase` - Buy VIP with coins
-- `GET /api/vip/status` - Get VIP status
-- `POST /api/payments/checkout/lifetime` - Stripe checkout for $15 lifetime VIP
-- `POST /api/payments/webhook` - Stripe webhook handler
-
-### Social Features
-- `POST /api/friends/request` - Send friend request
-- `POST /api/friends/accept` - Accept friend request
-
-### Rooms & Content
-- `GET /api/rooms` - List available rooms
-- `POST /api/rooms` - Create new room
-- `GET /api/messages/:roomId` - Get room messages
-- `POST /api/videos` - Add YouTube video to room
-- `GET /api/videos/:roomId` - Get room videos
-
-### Leaderboards
-- `GET /api/leaderboard/top-xp` - Top XP users
-- `GET /api/leaderboard/most-liked` - Most liked users
-
-## Stripe Integration
-
-### Setup
-1. Create a Stripe account
-2. Get your test secret key
-3. Add to `.env`: `STRIPE_SECRET_KEY=sk_test_...`
-4. Configure webhook endpoint: `POST {PUBLIC_URL}/api/payments/webhook`
-5. Select event: `checkout.session.completed`
-
-### Webhook Security
-For production, implement webhook signature verification:
-```javascript
-const signature = req.headers['stripe-signature'];
-const event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
-```
-
-## Deployment
-
-### Render (Recommended)
-1. Push code to GitHub
-2. Create new Web Service on Render
-3. Build command: `npm install`
-4. Start command: `node server.js`
-5. Set environment variables in Render dashboard
-
-### Environment Variables for Production
 ```env
-NODE_ENV=production
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/teenzoom
-JWT_SECRET=very_long_random_string_here
-PUBLIC_URL=https://your-app.onrender.com
-STRIPE_SECRET_KEY=sk_live_your_live_key_here
+# Database
+DATABASE_URL="your_mongodb_connection_string"
+
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your_nextauth_secret_key"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# Paystack
+PAYSTACK_SECRET_KEY="your_paystack_secret_key"
+PAYSTACK_PUBLIC_KEY="your_paystack_public_key"
+
+# Resend
+RESEND_API_KEY="your_resend_api_key"
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_api_key"
+CLOUDINARY_API_SECRET="your_api_secret"
+
+# App Configuration
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_NAME="TeenZoom v2.0"
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 teenzoom_mvp/
-├── models/                 # MongoDB schemas
-│   ├── User.js           # User model
-│   ├── Message.js        # Chat messages
-│   ├── Room.js           # Chat rooms
-│   ├── RoomVideo.js      # YouTube videos
-│   └── ModerationLog.js  # Moderation actions
-├── routes/                # API endpoints
-│   ├── auth.js           # Authentication
-│   ├── friends.js        # Friend system
-│   ├── rooms.js          # Room management
-│   ├── upload.js         # File uploads
-│   ├── vip.js            # VIP purchases
-│   ├── videos.js         # Video management
-│   ├── leaderboard.js    # Rankings
-│   └── payments.js       # Stripe integration
-├── public/                # Frontend files
-│   ├── index.html        # Main page
-│   ├── app.js            # Frontend logic
-│   ├── style.css         # Styling
-│   ├── payment-success.html
-│   └── payment-cancel.html
-├── server.js              # Main server file
-├── package.json           # Dependencies
-├── .env.example          # Environment template
-└── README.md             # This file
+├── src/
+│   ├── app/                    # Next.js 15 App Router
+│   │   ├── api/               # API routes
+│   │   ├── auth/              # Authentication pages
+│   │   ├── dashboard/         # User dashboard
+│   │   ├── room/              # Chat rooms
+│   │   └── globals.css        # Global styles
+│   ├── components/            # Reusable UI components
+│   │   ├── ui/               # shadcn/ui components
+│   │   └── providers/        # Context providers
+│   ├── lib/                  # Utility libraries
+│   │   ├── auth.ts           # NextAuth configuration
+│   │   ├── prisma.ts         # Prisma client
+│   │   ├── redis.ts          # Redis client
+│   │   └── utils.ts          # Utility functions
+│   └── hooks/                # Custom React hooks
+├── prisma/                   # Database schema and migrations
+├── public/                   # Static assets
+└── package.json             # Dependencies and scripts
 ```
 
-## Contributing
+## 🗄️ Database Schema
+
+The application uses Prisma with MongoDB and includes models for:
+
+- **Users**: Authentication, profiles, and stats
+- **Rooms**: Chat rooms and communities
+- **Messages**: Real-time chat messages
+- **Friendships**: User connections and relationships
+- **Payments**: Transaction history and Paystack integration
+- **Moderation**: Content moderation and user management
+
+## 🔐 Authentication
+
+- **NextAuth.js** for session management
+- **Credentials provider** for username/password login
+- **JWT tokens** for secure authentication
+- **Protected routes** for authenticated users only
+
+## 💰 Payment Integration
+
+- **Paystack** for Nigerian payment processing
+- **Coin system** for in-app currency
+- **VIP features** and premium subscriptions
+- **Secure transaction handling**
+
+## 📧 Email Notifications
+
+- **Resend** for modern email delivery
+- **Welcome emails** for new users
+- **Password reset** functionality
+- **Notification preferences**
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Connect your GitHub repository
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+### Manual Deployment
+1. Build the application: `npm run build`
+2. Start production server: `npm start`
+3. Set up reverse proxy (nginx/Apache)
+
+## 📱 Features Roadmap
+
+### Phase 1 (Current)
+- ✅ User authentication and profiles
+- ✅ Basic chat rooms
+- ✅ User dashboard and stats
+- ✅ Responsive design
+
+### Phase 2 (Next)
+- 🔄 Real-time WebSocket chat
+- 🔄 Video upload and sharing
+- 🔄 Friend system and requests
+- 🔄 Room creation and management
+
+### Phase 3 (Future)
+- 📋 Advanced moderation tools
+- 📋 Mobile app (React Native)
+- 📋 AI-powered content filtering
+- 📋 Advanced analytics and insights
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support
 
-For support or questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the admin user for system status
+- **Documentation**: Check the docs folder for detailed guides
+- **Issues**: Report bugs and request features via GitHub Issues
+- **Discussions**: Join community discussions on GitHub Discussions
+
+## 🙏 Acknowledgments
+
+- **Next.js team** for the amazing framework
+- **Vercel** for hosting and deployment
+- **shadcn/ui** for beautiful components
+- **Prisma** for the excellent ORM
+- **TeenZoom community** for feedback and support
 
 ---
 
-**TeenZoom 2.0** - Building the future of teen social networking! 🚀
+**Built with ❤️ for the next generation of teen social platforms**
