@@ -20,11 +20,11 @@ NEXT_PUBLIC_APP_URL=https://your-actual-railway-app-url.railway.app
 
 ### 2. Fix Resend Email Domain Error
 
-**Current Issue:** `The teenzoom.com domain is not verified`
+**Current Issue:** `The maishatech.co.ke domain is not verified`
 
 **Option A: Verify Your Domain (Recommended)**
 1. Go to [resend.com/domains](https://resend.com/domains)
-2. Add `teenzoom.com` domain
+2. Add `maishatech.co.ke` domain
 3. Follow DNS verification steps
 4. Wait for verification (usually 24-48 hours)
 

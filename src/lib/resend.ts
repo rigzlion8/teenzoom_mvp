@@ -94,7 +94,7 @@ export interface WeeklyDigestEmailData {
 export const sendEmail = async (emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> => {
   try {
     const result = await resend.emails.send({
-      from: emailData.from || 'TeenZoom <noreply@teenzoom.com>',
+      from: emailData.from || process.env.FROM_EMAIL || 'TeenZoom <noreply@maishatech.co.ke>',
       to: emailData.to,
       subject: emailData.subject,
       html: emailData.html,

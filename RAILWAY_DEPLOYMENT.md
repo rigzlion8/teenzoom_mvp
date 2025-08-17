@@ -75,7 +75,7 @@ NODE_ENV=production
 ### Step 4: Configure Custom Domain (Optional)
 
 1. In your Railway project, go to "Settings" → "Domains"
-2. Add your custom domain (e.g., `teenzoom.com`)
+2. Add your custom domain (e.g., `maishatech.co.ke`)
 3. Update your DNS records as instructed
 4. Update `NEXTAUTH_URL` and `NEXT_PUBLIC_APP_URL` to use your custom domain
 
