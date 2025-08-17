@@ -53,25 +53,31 @@ const verifyToken = (token) => jwt.verify(token, JWT_SECRET);
 
 // seed admin
 async function seedAdmin() {
-  const exists = await User.findOne({ username: 'Crosslow7' });
-  if (!exists) {
-    const passwordHash = await bcrypt.hash('gtrsupra20252026', 10);
-    const admin = new User({
-      username: 'Crosslow7',
-      passwordHash,
-      displayName: 'Admin',
-      role: 'admin',
-      coins: 50000,
-      vipLifetime: true,
-      xp: 1000
-    });
-    await admin.save();
-    const general = await Room.findOne({ roomId: 'general' });
-    if (!general) {
-      const r = new Room({ roomId: 'general', name: 'general', admins: [admin._id] });
-      await r.save();
+  try {
+    const exists = await User.findOne({ username: 'Crosslow7' });
+    if (!exists) {
+      const passwordHash = await bcrypt.hash('gtrsupra20252026', 10);
+      const admin = new User({
+        username: 'Crosslow7',
+        passwordHash,
+        displayName: 'Admin',
+        role: 'admin',
+        coins: 50000,
+        vipLifetime: true,
+        xp: 1000
+      });
+      await admin.save();
+      const general = await Room.findOne({ roomId: 'general' });
+      if (!general) {
+        const r = new Room({ roomId: 'general', name: 'general', admins: [admin._id] });
+        await r.save();
+      }
+      console.log('Seeded admin user Crosslow7');
+    } else {
+      console.log('Admin user Crosslow7 already exists');
     }
-    console.log('Seeded admin user Crosslow7');
+  } catch (err) {
+    console.error('Admin seed error:', err.message);
   }
 }
 
