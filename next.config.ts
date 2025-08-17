@@ -1,15 +1,25 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Ensure Prisma client is bundled correctly for server components on Railway
   serverExternalPackages: ['@prisma/client'],
+  
+  // Webpack configuration for Prisma
   webpack: (config) => {
-    config.externals = [...(config.externals || []), '@prisma/client']
+    config.externals = config.externals || []
+    config.externals.push('@prisma/client')
     return config
   },
+
+  // Experimental features
   experimental: {
     optimizePackageImports: ['tailwindcss']
-  }
-};
+  },
 
-export default nextConfig;
+  // Ensure proper port handling for Railway
+  env: {
+    PORT: process.env.PORT || '3000'
+  }
+}
+
+export default nextConfig
