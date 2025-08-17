@@ -1,38 +1,29 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { initSocket } from '@/lib/socket-server'
 
-// Initialize Socket.IO server
-let io: ReturnType<typeof initSocket> | null = null
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check if user is authenticated
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Initialize Socket.IO if not already done
+    // Initialize Socket.IO server
+    const io = initSocket()
+    
     if (!io) {
-      io = initSocket(3002)
-      console.log('Socket.IO server initialized')
+      return NextResponse.json({ error: 'Failed to initialize Socket.IO server' }, { status: 500 })
     }
 
-    return NextResponse.json({
-      message: 'Socket.IO endpoint ready',
-      status: 'connected',
+    return NextResponse.json({ 
+      message: 'Socket.IO server initialized successfully',
       socketUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002'
     })
   } catch (error) {
-    console.error('Socket route error:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Socket.IO initialization error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

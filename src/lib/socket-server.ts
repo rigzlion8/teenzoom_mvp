@@ -25,10 +25,13 @@ export interface ChatMessage {
 // Global Socket.IO instance
 let io: SocketIOServer | null = null
 
-export const initSocket = (port: number = 3002) => {
+export const initSocket = (port?: number) => {
   if (io) return io
 
-  io = new SocketIOServer(port, {
+  // Use Railway's PORT environment variable or fallback to 3002 for development
+  const serverPort = port || parseInt(process.env.PORT || '3002', 10)
+
+  io = new SocketIOServer(serverPort, {
     cors: {
       origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3002",
       methods: ["GET", "POST"]
