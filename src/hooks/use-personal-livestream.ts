@@ -1,14 +1,53 @@
+"use client"
+
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSocket } from './use-socket'
-import AgoraRTC, { 
-  IAgoraRTCClient, 
-  IAgoraRTCRemoteUser, 
-  ICameraVideoTrack, 
-  IMicrophoneAudioTrack,
-  IRemoteVideoTrack,
-  IRemoteAudioTrack
-} from 'agora-rtc-sdk-ng'
+
+// Type definitions for Agora (no runtime imports)
+interface IAgoraRTCClient {
+  on: (event: string, callback: (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => void) => void
+  off: (event: string, callback: (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => void) => void
+  removeAllListeners: () => void
+  join: (appId: string, channel: string, token: string, uid: string | number) => Promise<void>
+  leave: () => Promise<void>
+  publish: (tracks: unknown[]) => Promise<void>
+  unpublish: (track: unknown) => Promise<void>
+  subscribe: (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => Promise<void>
+}
+
+interface IAgoraRTCRemoteUser {
+  uid: string | number
+  videoTrack?: IRemoteVideoTrack
+  audioTrack?: IRemoteAudioTrack
+}
+
+interface ICameraVideoTrack {
+  enabled: boolean
+  setEnabled: (enabled: boolean) => void
+  close: () => void
+}
+
+interface IMicrophoneAudioTrack {
+  enabled: boolean
+  setEnabled: (enabled: boolean) => void
+  close: () => void
+}
+
+interface IRemoteVideoTrack {
+  play: (element?: HTMLElement) => void
+}
+
+interface IRemoteAudioTrack {
+  play: (element?: HTMLElement) => void
+}
+
+// Type for the AgoraRTC module
+interface AgoraRTCModule {
+  createClient: (config: { mode: string; codec: string }) => IAgoraRTCClient
+  createMicrophoneAudioTrack: () => Promise<IMicrophoneAudioTrack>
+  createCameraVideoTrack: () => Promise<ICameraVideoTrack>
+}
 
 export interface PersonalLivestreamState {
   isLive: boolean
@@ -122,10 +161,13 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
   // Initialize Agora client
   useEffect(() => {
-    if (!session?.user) return
+    if (!session?.user || typeof window === 'undefined') return
 
     const initAgoraClient = async () => {
       try {
+        // Dynamic import to avoid SSR issues
+        const AgoraRTC = await import('agora-rtc-sdk-ng') as unknown as AgoraRTCModule
+        
         const client = AgoraRTC.createClient({
           mode: 'rtc',
           codec: 'vp8',
@@ -165,8 +207,8 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
   // Core livestream functions
   const startStream = useCallback(async (privacy: 'public' | 'friends-only', title?: string, description?: string) => {
-    if (!session?.user) {
-      console.error('No session user available')
+    if (!session?.user || typeof window === 'undefined') {
+      console.error('No session user available or not in browser')
       return
     }
 
@@ -176,6 +218,9 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
     }
 
     try {
+      // Dynamic import to avoid SSR issues
+      const AgoraRTC = await import('agora-rtc-sdk-ng') as unknown as AgoraRTCModule
+      
       // Create local tracks
       const [audioTrack, videoTrack] = await Promise.all([
         AgoraRTC.createMicrophoneAudioTrack(),
@@ -303,7 +348,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
   }, [socket])
 
   const joinStream = useCallback(async (streamerId: string) => {
-    if (!agoraClientRef.current || !session?.user) return
+    if (!agoraClientRef.current || !session?.user || typeof window === 'undefined') return
 
     try {
       // Get token from API

@@ -1,10 +1,27 @@
 import { useEffect, useRef } from 'react'
-import { 
-  ICameraVideoTrack, 
-  IMicrophoneAudioTrack,
-  IRemoteVideoTrack,
-  IRemoteAudioTrack
-} from 'agora-rtc-sdk-ng'
+
+// Custom interface definitions to avoid SSR issues
+interface ICameraVideoTrack {
+  enabled: boolean
+  setEnabled: (enabled: boolean) => void
+  close: () => void
+  play: (element: HTMLElement) => void
+}
+
+interface IMicrophoneAudioTrack {
+  enabled: boolean
+  setEnabled: (enabled: boolean) => void
+  close: () => void
+  play: (element?: HTMLElement) => void
+}
+
+interface IRemoteVideoTrack {
+  play: (element: HTMLElement) => void
+}
+
+interface IRemoteAudioTrack {
+  play: (element?: HTMLElement) => void
+}
 
 interface LivestreamVideoPlayerProps {
   videoTrack?: ICameraVideoTrack | IRemoteVideoTrack | null
