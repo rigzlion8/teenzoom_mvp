@@ -260,128 +260,17 @@ export default function VideosPage() {
         <p className="text-muted-foreground text-center">Share and discover amazing content on TeenZoom</p>
       </div>
 
-      {/* Upload Section */}
+      {/* Upload Button - Simple and Compact */}
       {session?.user && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Share Your Video
-            </CardTitle>
-            {/* <CardDescription>
-              Upload videos to share with the TeenZoom community
-            </CardDescription> */}
-          </CardHeader>
-          <CardContent>
-            {!showUpload ? (
-              <Button onClick={() => setShowUpload(true)} className="w-full">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Video
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="video-caption" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Video Caption (Optional)
-                  </Label>
-                  <div className="relative">
-                    <Textarea
-                      id="video-caption"
-                      placeholder="Write a compelling caption for your video... (optional)"
-                      value={videoCaption}
-                      onChange={(e) => setVideoCaption(e.target.value)}
-                      className="min-h-[100px] resize-none"
-                      maxLength={500}
-                    />
-                    <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                      {videoCaption.length}/500
-                    </div>
-                  </div>
-                </div>
-
-                {/* Privacy Settings */}
-                <div className="space-y-2">
-                  <Label htmlFor="video-privacy" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Privacy Settings
-                  </Label>
-                  <Select value={videoPrivacy} onValueChange={setVideoPrivacy}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose privacy level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                          Public - Anyone can view
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="friends_only">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          Friends Only - Only your friends can view
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="private">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          Private - Only you can view
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    {videoPrivacy === 'public' && 'Your video will be visible to everyone on TeenZoom'}
-                    {videoPrivacy === 'friends_only' && 'Only your accepted friends can see this video'}
-                    {videoPrivacy === 'private' && 'This video is only visible to you'}
-                  </p>
-                </div>
-                
-                {uploadError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
-                      <span className="text-sm font-medium">Upload failed:</span>
-                      <span className="text-sm">{uploadError}</span>
-                    </div>
-                    {lastUploadFile && (
-                      <Button
-                        onClick={handleRetryUpload}
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Retry Upload
-                      </Button>
-                    )}
-                  </div>
-                )}
-                
-                <FileUpload
-                  onFileSelect={handleVideoUpload}
-                  allowedTypes={['video/*']}
-                  maxFileSize={100}
-                  uploading={uploading}
-                  uploadProgress={uploadProgress}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => {
-                      setShowUpload(false)
-                      setVideoCaption('') // Reset caption when closing
-                      setVideoPrivacy('public') // Reset privacy when closing
-                      setUploadError(null) // Clear any errors
-                      setLastUploadFile(null) // Clear stored file
-                    }} 
-                    variant="outline"
-                    disabled={uploading}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="mb-6 flex justify-center">
+          <Button 
+            onClick={() => setShowUpload(true)} 
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3"
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Upload Video
+          </Button>
+        </div>
       )}
 
       {/* Search and Categories */}
@@ -405,7 +294,6 @@ export default function VideosPage() {
               onClick={() => setSelectedCategory(category.id)}
               className="flex items-center gap-2"
             >
-              {/* <category.icon className="h-4 w-4" /> */}
               {category.name}
             </Button>
           ))}
@@ -517,9 +405,138 @@ export default function VideosPage() {
 
       {videos.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          {/* <Video className="h-16 w-16 mx-auto mb-4 opacity-50" /> */}
           <p className="text-lg">No videos found in this category</p>
           <p className="text-sm">Try selecting a different category or upload the first video!</p>
+        </div>
+      )}
+
+      {/* Upload Dialog */}
+      {showUpload && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Upload Video</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowUpload(false)
+                    setVideoCaption('')
+                    setVideoPrivacy('public')
+                    setUploadError(null)
+                    setLastUploadFile(null)
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="video-caption" className="text-sm font-medium">
+                    Video Caption (Optional)
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      id="video-caption"
+                      placeholder="Write a compelling caption for your video... (optional)"
+                      value={videoCaption}
+                      onChange={(e) => setVideoCaption(e.target.value)}
+                      className="min-h-[100px] resize-none"
+                      maxLength={500}
+                    />
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                      {videoCaption.length}/500
+                    </div>
+                  </div>
+                </div>
+
+                {/* Privacy Settings */}
+                <div className="space-y-2">
+                  <Label htmlFor="video-privacy" className="text-sm font-medium">
+                    Privacy Settings
+                  </Label>
+                  <Select value={videoPrivacy} onValueChange={setVideoPrivacy}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose privacy level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          Public - Anyone can view
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="friends_only">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          Friends Only - Only your friends can view
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          Private - Only you can view
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    {videoPrivacy === 'public' && 'Your video will be visible to everyone on TeenZoom'}
+                    {videoPrivacy === 'friends_only' && 'Only your accepted friends can see this video'}
+                    {videoPrivacy === 'private' && 'This video is only visible to you'}
+                  </p>
+                </div>
+                
+                {uploadError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+                      <span className="text-sm font-medium">Upload failed:</span>
+                      <span className="text-sm">{uploadError}</span>
+                    </div>
+                    {lastUploadFile && (
+                      <Button
+                        onClick={handleRetryUpload}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Retry Upload
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                <FileUpload
+                  onFileSelect={handleVideoUpload}
+                  allowedTypes={['video/*']}
+                  maxFileSize={100}
+                  uploading={uploading}
+                  uploadProgress={uploadProgress}
+                />
+                
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    onClick={() => {
+                      setShowUpload(false)
+                      setVideoCaption('')
+                      setVideoPrivacy('public')
+                      setUploadError(null)
+                      setLastUploadFile(null)
+                    }} 
+                    variant="outline"
+                    disabled={uploading}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
