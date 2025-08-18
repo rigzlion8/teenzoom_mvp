@@ -47,42 +47,57 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Quick Actions Section */}
       <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
         <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12 sm:mb-16 px-4">
-          Why Choose TeenZoom?
+          Quick Actions
         </h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-4">
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-            <CardHeader className="p-4 sm:p-6">
-              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400 mb-3 sm:mb-4" />
-              <CardTitle className="text-lg sm:text-xl">Real-time Chat</CardTitle>
-              <CardDescription className="text-gray-300 text-sm sm:text-base">
-                Instant messaging with friends in private or public rooms
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <Link href="/room/general" className="block">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400 mb-3 sm:mb-4" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
+                <CardTitle className="text-lg sm:text-xl">Real-time Chat</CardTitle>
+                <CardDescription className="text-gray-300 text-sm sm:text-base">
+                  Join the general chat room and start messaging with friends
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
 
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-            <CardHeader className="p-4 sm:p-6">
-              <Video className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400 mb-3 sm:mb-4" />
-              <CardTitle className="text-lg sm:text-xl">Video Sharing</CardTitle>
-              <CardDescription className="text-gray-300 text-sm sm:text-base">
-                Share and watch videos with your community
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <Link href="/videos" className="block">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <Video className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400 mb-3 sm:mb-4" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
+                <CardTitle className="text-lg sm:text-xl">Video Sharing</CardTitle>
+                <CardDescription className="text-gray-300 text-sm sm:text-base">
+                  Upload, watch, and share videos with your community
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
 
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-            <CardHeader className="p-4 sm:p-6">
-              <Users className="w-10 h-10 sm:w-12 sm:h-12 text-green-400 mb-3 sm:mb-4" />
-              <CardTitle className="text-lg sm:text-xl">Community</CardTitle>
-              <CardDescription className="text-gray-300 text-sm sm:text-base">
-                Join rooms, make friends, and build connections
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <Link href="/rooms" className="block">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <Users className="w-10 h-10 sm:w-12 sm:h-12 text-green-400 mb-3 sm:mb-4" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
+                <CardTitle className="text-lg sm:text-xl">Community</CardTitle>
+                <CardDescription className="text-gray-300 text-sm sm:text-base">
+                  Discover and join rooms to connect with like-minded teens
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
 
           <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
             <CardHeader className="p-4 sm:p-6">
