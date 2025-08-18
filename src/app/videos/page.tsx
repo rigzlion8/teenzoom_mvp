@@ -78,7 +78,7 @@ export default function VideosPage() {
 
   useEffect(() => {
     fetchVideos()
-  }, [selectedCategory])
+  }, [selectedCategory, videos.length === 0]) // Only fetch when category changes or when there are no videos
 
   const handleVideoUpload = async (file: File) => {
     console.log('handleVideoUpload called with file:', file)

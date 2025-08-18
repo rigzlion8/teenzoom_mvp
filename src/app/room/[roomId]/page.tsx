@@ -274,13 +274,13 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
                   ) : (
                     <>
                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0">
-                        {message.displayName.charAt(0).toUpperCase()}
+                        {(message.displayName?.charAt(0) || message.username?.charAt(0) || '?').toUpperCase()}
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 sm:gap-2 mb-1">
                           <span className="font-semibold text-white text-sm sm:text-base truncate">
-                            {message.displayName}
+                            {message.displayName || message.username || 'Unknown'}
                           </span>
                           <span className="text-xs text-gray-400 flex-shrink-0">
                             {new Date(message.createdAt).toLocaleTimeString()}
