@@ -124,13 +124,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         setSelectedFiles(newFiles)
       }
       
-      // Call onFileSelect for each file with safety check
-      newFiles.forEach((file, index) => {
-        console.log(`Calling onFileSelect for file ${index}:`, file.name)
-        if (file && file.name && file.type) {
-          onFileSelect(file)
+      // Call onFileSelect for each file with the ORIGINAL File object, not FileWithPreview
+      Array.from(files).forEach((originalFile, index) => {
+        console.log(`Calling onFileSelect for file ${index}:`, originalFile.name)
+        if (originalFile && originalFile.name && originalFile.type) {
+          onFileSelect(originalFile) // Use the original File object
         } else {
-          console.error('Skipping invalid file in onFileSelect:', file)
+          console.error('Skipping invalid file in onFileSelect:', originalFile)
         }
       })
     }
