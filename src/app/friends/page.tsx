@@ -1,12 +1,15 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Search, UserPlus, Users, UserCheck, UserX, MessageCircle } from 'lucide-react'
+import { Search, UserPlus, Users, UserCheck, UserX, MessageCircle, Video } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { DirectMessage } from '@/components/direct-message'
 
@@ -42,11 +45,17 @@ interface SearchResult {
 export default function FriendsPage() {
   const { data: session } = useSession()
   const { toast } = useToast()
+  const router = useRouter()
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
+  const [showGoLiveDialog, setShowGoLiveDialog] = useState(false)
+  const [liveTargetFriend, setLiveTargetFriend] = useState<Friend | null>(null)
+  const [rooms, setRooms] = useState<Array<{ id: string; roomId: string; name: string }>>([])
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false)
+  const [selectedRoomId, setSelectedRoomId] = useState('')
 
   useEffect(() => {
     if (session?.user) {
@@ -77,6 +86,44 @@ export default function FriendsPage() {
     } catch (error) {
       console.error('Error fetching friend requests:', error)
     }
+  }
+
+  const openGoLiveWithFriend = async (friend: Friend) => {
+    setLiveTargetFriend(friend)
+    setShowGoLiveDialog(true)
+    setSelectedRoomId('')
+    await loadUserRooms()
+  }
+
+  type ApiRoom = { id: string; roomId: string; name: string; isMember?: boolean }
+
+  const loadUserRooms = async () => {
+    try {
+      setIsLoadingRooms(true)
+      const response = await fetch('/api/rooms')
+      if (response.ok) {
+        const data = await response.json()
+        // Expecting data.rooms: { id, roomId, name, isMember }
+        const roomsFromApi: ApiRoom[] = Array.isArray(data.rooms) ? data.rooms : []
+        const userRooms = roomsFromApi
+          .filter((r) => !!r.isMember)
+          .map((r) => ({ id: r.id, roomId: r.roomId, name: r.name }))
+        setRooms(userRooms)
+      }
+    } catch (error) {
+      console.error('Failed to load rooms', error)
+    } finally {
+      setIsLoadingRooms(false)
+    }
+  }
+
+  const startLiveInSelectedRoom = () => {
+    if (!selectedRoomId) return
+    const room = rooms.find(r => r.id === selectedRoomId)
+    if (!room) return
+    // Navigate to room with goLive flag and optional invite param
+    const invite = liveTargetFriend?.id ? `&invite=${liveTargetFriend.id}` : ''
+    router.push(`/room/${room.roomId}?goLive=1${invite}`)
   }
 
   const searchUsers = async () => {
@@ -309,6 +356,16 @@ export default function FriendsPage() {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
+                      {friend.isOnline && (
+                        <Button
+                          size="sm"
+                          onClick={() => openGoLiveWithFriend(friend)}
+                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto flex items-center gap-2"
+                        >
+                          <Video className="h-4 w-4" />
+                          Go Live
+                        </Button>
+                      )}
                       <DirectMessage
                         friendId={friend.id}
                         friendName={friend.displayName || friend.username}
@@ -330,6 +387,44 @@ export default function FriendsPage() {
             )}
           </CardContent>
         </Card>
+        
+        {/* Go Live Dialog */}
+        <Dialog open={showGoLiveDialog} onOpenChange={setShowGoLiveDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Go Live {liveTargetFriend ? `with ${liveTargetFriend.displayName}` : ''}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Choose a room to start your livestream in:</p>
+                <Select value={selectedRoomId} onValueChange={setSelectedRoomId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingRooms ? 'Loading rooms...' : 'Select a room'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingRooms ? (
+                      <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    ) : rooms.length === 0 ? (
+                      <SelectItem value="none" disabled>No rooms found</SelectItem>
+                    ) : (
+                      rooms.map((room) => (
+                        <SelectItem key={room.id} value={room.id}>
+                          {room.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowGoLiveDialog(false)}>Cancel</Button>
+                <Button onClick={startLiveInSelectedRoom} disabled={!selectedRoomId} className="bg-green-600 hover:bg-green-700">
+                  <Video className="h-4 w-4 mr-2" /> Start Live
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

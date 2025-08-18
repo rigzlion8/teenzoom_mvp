@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,6 +61,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
 function ChatRoomClient({ roomId }: { roomId: string }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [newMessage, setNewMessage] = useState('')
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
@@ -100,6 +101,19 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
     toggleVideo,
     toggleAudio
   } = useLivestream(roomId)
+
+  // Auto-start livestream when navigated with ?goLive=1
+  const autoGoLive = searchParams?.get('goLive') === '1'
+  const attemptedAutoGoLiveRef = useRef(false)
+
+  useEffect(() => {
+    if (autoGoLive && !attemptedAutoGoLiveRef.current && !isStreaming && status === 'authenticated') {
+      attemptedAutoGoLiveRef.current = true
+      startStream().catch(() => {
+        // ignore auto start errors
+      })
+    }
+  }, [autoGoLive, isStreaming, status, startStream])
 
   // Redirect if not authenticated
   useEffect(() => {
