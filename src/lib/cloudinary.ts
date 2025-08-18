@@ -32,6 +32,11 @@ export const uploadToCloudinary = async (
   options: UploadOptions = {}
 ): Promise<UploadResult> => {
   try {
+    // Safety check for filename
+    if (!filename || typeof filename !== 'string') {
+      throw new Error('Invalid filename provided')
+    }
+
     const {
       folder = process.env.CLOUDINARY_FOLDER || 'teenzoom',
       resource_type = 'auto',

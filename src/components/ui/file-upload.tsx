@@ -78,12 +78,25 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   }
 
   const handleFileSelect = useCallback((files: FileList | null) => {
-    if (!files) return
+    console.log('handleFileSelect called with:', files)
+    if (!files || files.length === 0) {
+      console.log('No files provided')
+      return
+    }
 
     const newFiles: FileWithPreview[] = []
     const errors: string[] = []
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file, index) => {
+      console.log(`Processing file ${index}:`, file, 'name:', file?.name, 'type:', file?.type, 'size:', file?.size)
+      
+      // Safety check to ensure file is valid
+      if (!file || !file.name || !file.type) {
+        console.error('Invalid file object:', file)
+        errors.push('Invalid file selected')
+        return
+      }
+
       const error = validateFile(file)
       if (error) {
         errors.push(`${file.name}: ${error}`)
@@ -99,18 +112,27 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     })
 
     if (errors.length > 0) {
+      console.error('File validation errors:', errors)
       onUploadError?.(errors.join('\n'))
     }
 
     if (newFiles.length > 0) {
+      console.log('Valid files to process:', newFiles.length)
       if (multiple) {
         setSelectedFiles(prev => [...prev, ...newFiles])
       } else {
         setSelectedFiles(newFiles)
       }
       
-      // Call onFileSelect for each file
-      newFiles.forEach(file => onFileSelect(file))
+      // Call onFileSelect for each file with safety check
+      newFiles.forEach((file, index) => {
+        console.log(`Calling onFileSelect for file ${index}:`, file.name)
+        if (file && file.name && file.type) {
+          onFileSelect(file)
+        } else {
+          console.error('Skipping invalid file in onFileSelect:', file)
+        }
+      })
     }
   }, [maxFileSize, allowedTypes, multiple, onFileSelect, onUploadError, validateFile])
 
@@ -127,7 +149,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
-    handleFileSelect(e.dataTransfer.files)
+    console.log('File drop event:', e.dataTransfer.files)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files)
+    } else {
+      console.log('No files in drop event')
+    }
   }, [handleFileSelect])
 
   const removeFile = useCallback((index: number) => {
@@ -169,7 +196,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         type="file"
         multiple={multiple}
         accept={allowedTypes.join(',')}
-        onChange={(e) => handleFileSelect(e.target.files)}
+        onChange={(e) => {
+          console.log('File input onChange triggered:', e.target.files)
+          if (e.target.files && e.target.files.length > 0) {
+            handleFileSelect(e.target.files)
+          } else {
+            console.log('No files selected in file input')
+          }
+        }}
         className="hidden"
         disabled={disabled}
       />

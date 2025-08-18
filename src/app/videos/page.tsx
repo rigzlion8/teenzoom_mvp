@@ -79,7 +79,23 @@ export default function VideosPage() {
   }, [fetchVideos])
 
   const handleVideoUpload = async (file: File) => {
-    if (!file) return
+    console.log('handleVideoUpload called with file:', file)
+    console.log('File details:', {
+      name: file?.name,
+      type: file?.type,
+      size: file?.size,
+      isFile: file instanceof File
+    })
+    
+    if (!file) {
+      console.error('No file provided to handleVideoUpload')
+      return
+    }
+    
+    if (!(file instanceof File)) {
+      console.error('handleVideoUpload received non-File object:', typeof file, file)
+      return
+    }
     
     console.log('Video upload started with file:', file.name, file.size)
     setUploading(true)
@@ -89,6 +105,13 @@ export default function VideosPage() {
       formData.append('title', `Video ${Date.now()}`)
       formData.append('description', 'Uploaded video')
       formData.append('category', selectedCategory)
+
+      console.log('FormData created:', {
+        video: file.name,
+        title: `Video ${Date.now()}`,
+        description: 'Uploaded video',
+        category: selectedCategory
+      })
 
       // Check if we're in production and need to use a different base URL
       const apiUrl = process.env.NODE_ENV === 'production' 

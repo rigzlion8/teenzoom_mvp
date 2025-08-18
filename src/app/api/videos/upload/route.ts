@@ -21,9 +21,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Video file is required' }, { status: 400 })
     }
 
+    // Validate that video is actually a File object
+    if (!(video instanceof File)) {
+      return NextResponse.json({ error: 'Invalid file object' }, { status: 400 })
+    }
+
+    // Validate file properties
+    if (!video.name || !video.type || video.size === 0) {
+      return NextResponse.json({ error: 'Invalid video file' }, { status: 400 })
+    }
+
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Video title is required' }, { status: 400 })
     }
+
+    console.log('Processing video upload:', {
+      name: video.name,
+      type: video.type,
+      size: video.size,
+      title,
+      description
+    })
 
     // Convert File to Buffer
     const arrayBuffer = await video.arrayBuffer()
@@ -39,6 +57,8 @@ export async function POST(request: NextRequest) {
       }
     )
 
+    console.log('Cloudinary upload successful:', uploadResult)
+
     // Create video record in database
     const videoRecord = await prisma.roomVideo.create({
       data: {
@@ -52,12 +72,17 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('Database record created:', videoRecord)
+
     return NextResponse.json({
       message: 'Video uploaded successfully',
       video: videoRecord
     })
   } catch (error) {
     console.error('Error uploading video:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
