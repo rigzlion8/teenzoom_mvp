@@ -273,10 +273,10 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
           Message
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col">
+      <DialogContent className="w-[95vw] max-w-2xl h-[80vh] sm:h-[600px] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
             Message {friendName} (@{friendUsername})
           </DialogTitle>
         </DialogHeader>
@@ -303,17 +303,17 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
                   }`}
                 >
                   {message.senderId !== session?.user?.id && (
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0">
                       {message.sender.displayName?.charAt(0) || message.sender.username?.charAt(0) || '?'}
                     </div>
                   )}
                   
                   <div
-                    className={`max-w-xs ${
+                    className={`max-w-[80vw] sm:max-w-xs ${
                       message.senderId === session?.user?.id
                         ? 'bg-blue-600 text-white rounded-l-lg rounded-tr-lg'
                         : 'bg-white text-gray-900 rounded-r-lg rounded-tl-lg border'
-                    } p-3`}
+                    } p-2 sm:p-3`}
                   >
                     {renderMessageContent(message)}
                     <p className={`text-xs mt-1 ${
@@ -324,7 +324,7 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
                   </div>
                   
                   {message.senderId === session?.user?.id && (
-                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0">
                       {session.user.displayName?.charAt(0) || session.user.username?.charAt(0) || '?'}
                     </div>
                   )}
@@ -358,7 +358,7 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
           )}
 
           {/* Message Input */}
-          <form onSubmit={handleSendMessage} className="flex gap-2 pt-4">
+          <form onSubmit={handleSendMessage} className="flex flex-col sm:flex-row gap-2 pt-4">
             <div className="flex-1 relative">
               <Input
                 ref={inputRef}
@@ -385,10 +385,11 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
             
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 px-6"
+              className="bg-blue-600 hover:bg-blue-700 px-6 w-full sm:w-auto"
               disabled={!newMessage.trim() || uploadingFile}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Send</span>
             </Button>
           </form>
         </div>
