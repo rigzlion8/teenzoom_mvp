@@ -21,7 +21,13 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
-      maxMembers
+      category,
+      privacy,
+      maxMembers,
+      allowVideo,
+      allowFileSharing,
+      requireApproval,
+      tags
     } = body
 
     if (!name || !name.trim()) {
@@ -29,20 +35,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Room name is required' }, { status: 400 })
     }
 
+    // Validate privacy setting
+    if (!['public', 'friends_only', 'private'].includes(privacy)) {
+      console.log('Invalid privacy setting:', privacy)
+      return NextResponse.json({ error: 'Invalid privacy setting' }, { status: 400 })
+    }
+
     console.log('Creating room with data:', {
       name: name.trim(),
       description: description?.trim() || null,
-      maxUsers: maxMembers || 50
+      category: category || 'general',
+      privacy,
+      maxUsers: maxMembers || 50,
+      allowVideo: allowVideo ?? true,
+      allowFileSharing: allowFileSharing ?? true,
+      requireApproval: requireApproval ?? false,
+      tags: tags || []
     })
 
-    // Create the room with current schema fields
+    // Create the room with updated schema fields
     const room = await prisma.room.create({
       data: {
         roomId: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: name.trim(),
         description: description?.trim() || 'No description',
+        category: category || 'general',
+        privacy: privacy as 'public' | 'friends_only' | 'private',
         maxUsers: maxMembers || 50,
-        isPrivate: false,
+        allowVideo: allowVideo ?? true,
+        allowFileSharing: allowFileSharing ?? true,
+        requireApproval: requireApproval ?? false,
+        tags: tags || [],
         ownerId: session.user.id
       }
     })

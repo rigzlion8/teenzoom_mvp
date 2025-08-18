@@ -28,7 +28,7 @@ interface Room {
   name: string
   description: string
   category: string
-  privacy: 'public' | 'friends' | 'private'
+  privacy: 'public' | 'friends_only' | 'private'
   memberCount: number
   maxMembers: number
   isActive: boolean
@@ -158,7 +158,7 @@ export default function RoomsPage() {
   const getPrivacyIcon = (privacy: string) => {
     switch (privacy) {
       case 'public': return <Globe className="h-4 w-4" />
-      case 'friends': return <Users className="h-4 w-4" />
+      case 'friends_only': return <Users className="h-4 w-4" />
       case 'private': return <Lock className="h-4 w-4" />
       default: return <Globe className="h-4 w-4" />
     }
@@ -167,7 +167,7 @@ export default function RoomsPage() {
   const getPrivacyColor = (privacy: string) => {
     switch (privacy) {
       case 'public': return 'bg-green-500'
-      case 'friends': return 'bg-blue-500'
+      case 'friends_only': return 'bg-blue-500'
       case 'private': return 'bg-red-500'
       default: return 'bg-gray-500'
     }

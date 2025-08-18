@@ -34,7 +34,8 @@ async function main() {
       roomId: 'general',
       name: 'General',
       description: 'Welcome to TeenZoom! This is the main chat room.',
-      isPrivate: false,
+      privacy: 'public',
+      category: 'general',
       maxUsers: 100,
       ownerId: admin.id
     }

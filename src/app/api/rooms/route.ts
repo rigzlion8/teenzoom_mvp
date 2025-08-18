@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,16 +15,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const search = searchParams.get('search')
 
-    // Build where clause
-    const where: {
-      isActive?: boolean
-      category?: string
-      OR?: Array<{
-        name?: { contains: string; mode: 'insensitive' }
-        description?: { contains: string; mode: 'insensitive' }
-        tags?: { has: string }
-      }>
-    } = {
+    // Build where clause for basic filtering
+    const where: Prisma.RoomWhereInput = {
       isActive: true
     }
 
@@ -39,14 +32,34 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get rooms with member count and check if current user is a member
-    const rooms = await prisma.room.findMany({
-      where,
+    // Get rooms that the user can see based on privacy settings
+    const userRooms = await prisma.room.findMany({
+      where: {
+        OR: [
+          { privacy: 'public' },
+          { privacy: 'friends_only' },
+          { 
+            privacy: 'private',
+            members: {
+              some: {
+                userId: session.user.id
+              }
+            }
+          }
+        ]
+      },
       include: {
         members: {
           select: {
             userId: true,
             role: true
+          }
+        },
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true
           }
         }
       },
@@ -56,7 +69,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Transform rooms to include member count and user membership status
-    const roomsWithStats = rooms.map(room => {
+    const roomsWithStats = userRooms.map(room => {
       const memberCount = room.members.length
       const isMember = room.members.some(member => member.userId === session.user.id)
       
@@ -64,18 +77,18 @@ export async function GET(request: NextRequest) {
         id: room.id,
         name: room.name,
         description: room.description,
-        category: 'general', // Default for now
-        privacy: 'public', // Default for now
+        category: room.category,
+        privacy: room.privacy,
         memberCount,
         maxMembers: room.maxUsers,
-        isActive: true, // Default for now
-        tags: [], // Default for now
+        isActive: room.isActive,
+        tags: room.tags,
         createdAt: room.createdAt,
-        lastActivity: room.createdAt, // Use createdAt for now
+        lastActivity: room.lastActivity,
         owner: {
-          id: 'system',
-          username: 'system',
-          displayName: 'System'
+          id: room.owner.id,
+          username: room.owner.username,
+          displayName: room.owner.displayName
         },
         isMember
       }

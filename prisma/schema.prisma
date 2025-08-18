@@ -53,8 +53,7 @@ model Room {
   name       String
   description String?
   category   String   @default("general")
-  privacy    String   @default("public") // public, friends, private
-  isPrivate  Boolean  @default(false)
+  privacy    RoomPrivacy @default(public)
   maxUsers   Int      @default(50)
   isActive   Boolean  @default(true)
   tags       String[]
@@ -292,6 +291,12 @@ enum TargetType {
 }
 
 enum VideoPrivacy {
+  public
+  private
+  friends_only
+}
+
+enum RoomPrivacy {
   public
   private
   friends_only

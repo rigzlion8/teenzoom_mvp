@@ -24,9 +24,9 @@ const roomCategories = [
 ]
 
 const privacyLevels = [
-  { id: 'public', name: 'Public', description: 'Anyone can join', icon: Globe },
-  { id: 'friends', name: 'Friends Only', description: 'Only your friends can join', icon: Users },
-  { id: 'private', name: 'Private', description: 'Invite only', icon: Lock },
+  { id: 'public', name: 'Public', description: 'Anyone can discover and join', icon: Globe, color: 'text-green-600' },
+  { id: 'friends_only', name: 'Friends Only', description: 'Only your friends can join', icon: Users, color: 'text-blue-600' },
+  { id: 'private', name: 'Private', description: 'Invite only - hidden from discovery', icon: Lock, color: 'text-red-600' },
 ]
 
 export default function CreateRoomPage() {
@@ -212,15 +212,15 @@ export default function CreateRoomPage() {
                   {privacyLevels.map((level) => (
                     <div
                       key={level.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                         formData.privacy === level.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/50 hover:bg-muted/50'
                       }`}
                       onClick={() => handlePrivacyChange(level.id)}
                     >
                       <div className="flex items-center gap-2">
-                        <level.icon className="h-4 w-4" />
+                        <level.icon className={`h-4 w-4 ${level.color}`} />
                         <div>
                           <p className="font-medium">{level.name}</p>
                           <p className="text-sm text-muted-foreground">{level.description}</p>
