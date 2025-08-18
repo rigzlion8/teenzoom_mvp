@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FileUpload } from '@/components/ui/file-upload'
 import { 
   Video, 
@@ -63,11 +62,7 @@ export default function VideosPage() {
   const [uploading, setUploading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
 
-  useEffect(() => {
-    fetchVideos()
-  }, [selectedCategory])
-
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
     try {
       const response = await fetch(`/api/videos?category=${selectedCategory}`)
       if (response.ok) {
@@ -77,7 +72,11 @@ export default function VideosPage() {
     } catch (error) {
       console.error('Error fetching videos:', error)
     }
-  }
+  }, [selectedCategory])
+
+  useEffect(() => {
+    fetchVideos()
+  }, [fetchVideos])
 
   const handleVideoUpload = async (file: File) => {
     if (!file) return

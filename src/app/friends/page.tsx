@@ -31,13 +31,20 @@ interface FriendRequest {
   createdAt: string
 }
 
+interface SearchResult {
+  id: string
+  username: string
+  displayName: string
+  level: number
+}
+
 export default function FriendsPage() {
   const { data: session } = useSession()
   const { toast } = useToast()
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ import {
   Lock, 
   Globe, 
   Plus, 
-  Search, 
   Gamepad2, 
   Music, 
   BookOpen, 
@@ -67,25 +66,7 @@ export default function RoomsPage() {
     fetchRooms()
   }, [])
 
-  useEffect(() => {
-    filterRooms()
-  }, [rooms, selectedCategory, searchQuery])
-
-  const fetchRooms = async () => {
-    try {
-      const response = await fetch('/api/rooms')
-      if (response.ok) {
-        const data = await response.json()
-        setRooms(data.rooms)
-      }
-    } catch (error) {
-      console.error('Error fetching rooms:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filterRooms = () => {
+  const filterRooms = useCallback(() => {
     let filtered = rooms
 
     // Filter by category
@@ -103,6 +84,24 @@ export default function RoomsPage() {
     }
 
     setFilteredRooms(filtered)
+  }, [rooms, selectedCategory, searchQuery])
+
+  useEffect(() => {
+    filterRooms()
+  }, [filterRooms])
+
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch('/api/rooms')
+      if (response.ok) {
+        const data = await response.json()
+        setRooms(data.rooms)
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const joinRoom = async (roomId: string) => {

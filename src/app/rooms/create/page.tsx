@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Users, Lock, Globe, Shield, Video, Music, Gamepad2, BookOpen, Heart, Star } from 'lucide-react'
+import { Users, Lock, Globe, Music, Gamepad2, BookOpen, Heart, Star } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 const roomCategories = [

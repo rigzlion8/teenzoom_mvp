@@ -12,7 +12,6 @@ import {
   Trophy, 
   Shield, 
   Menu, 
-  X,
   Plus,
   User,
   Settings,

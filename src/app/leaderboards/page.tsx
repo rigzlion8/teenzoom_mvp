@@ -9,10 +9,8 @@ import {
   Trophy, 
   Medal, 
   Star, 
-  TrendingUp, 
   Users, 
   MessageCircle, 
-  Heart, 
   Video,
   Crown,
   Zap,
@@ -222,7 +220,7 @@ export default function LeaderboardsPage() {
             <CardContent>
               {leaderboards[category.id] && leaderboards[category.id].length > 0 ? (
                 <div className="space-y-3">
-                  {leaderboards[category.id].slice(0, 50).map((entry, index) => (
+                  {leaderboards[category.id].slice(0, 50).map((entry) => (
                     <div
                       key={entry.id}
                       className={`flex items-center justify-between p-4 rounded-lg border transition-all hover:shadow-md ${

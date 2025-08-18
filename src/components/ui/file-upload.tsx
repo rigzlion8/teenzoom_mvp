@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback } from 'react'
-import { Upload, X, File, Image, Video, Music, FileText, Loader2 } from 'lucide-react'
+import { Upload, X, File, Image, Video, Music, FileText } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 
@@ -130,16 +130,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     handleFileSelect(e.dataTransfer.files)
   }, [handleFileSelect])
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => {
-      const newFiles = [...prev]
-      const removedFile = newFiles.splice(index, 1)[0]
-      if (removedFile.preview) {
-        URL.revokeObjectURL(removedFile.preview)
-      }
-      return newFiles
-    })
-  }
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }, [])
 
   const openFileDialog = () => {
     fileInputRef.current?.click()
@@ -188,36 +181,28 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             Selected Files ({selectedFiles.length})
           </h4>
           {selectedFiles.map((file, index) => (
-            <div
-              key={`${file.name}-${index}`}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
-              <div className="flex items-center space-x-3">
-                {getFileIcon(file)}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatFileSize(file.size)}
-                  </p>
-                </div>
+            <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
+              {file.preview ? (
+                <img 
+                  src={file.preview} 
+                  alt={`Preview of ${file.name}`}
+                  className="w-12 h-12 object-cover rounded"
+                />
+              ) : (
+                getFileIcon(file)
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                {file.uploadStatus === 'uploading' && (
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeFile(index)}
-                  disabled={file.uploadStatus === 'uploading'}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFile(index)}
+                className="text-destructive hover:text-destructive"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           ))}
         </div>
