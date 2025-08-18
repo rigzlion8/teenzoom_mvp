@@ -17,6 +17,7 @@ import {
   Trophy
 } from "lucide-react"
 import { signOut } from "next-auth/react"
+import { DashboardNotifications } from '@/components/dashboard-notifications'
 
 interface UserStats {
   coins: number
@@ -219,15 +220,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="mb-6 sm:mb-8">
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Recent Activity</h3>
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <p className="text-gray-300 text-center py-6 sm:py-8 text-sm sm:text-base">
-                No recent activity yet. Start chatting to see your activity here!
-              </p>
-            </CardContent>
-          </Card>
+        <div className="mb-8">
+          <DashboardNotifications />
         </div>
       </div>
     </div>

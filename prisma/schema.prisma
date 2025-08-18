@@ -39,6 +39,7 @@ model User {
   receivedPayments Payment[] @relation("Receiver")
   moderationLogs ModerationLog[]
   ownedRooms   Room[]      @relation("RoomOwner")
+  notifications Notification[]
 
   @@map("users")
 }
@@ -177,6 +178,22 @@ model ModerationLog {
   @@map("moderation_logs")
 }
 
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?    // Additional data like friendId, roomId, etc.
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
 // Enums
 enum Role {
   user
@@ -202,7 +219,17 @@ enum FriendshipStatus {
   pending
   accepted
   rejected
-  blocked
+}
+
+enum NotificationType {
+  friend_request
+  friend_accepted
+  friend_rejected
+  room_invitation
+  video_upload
+  room_created
+  payment_success
+  system_alert
 }
 
 enum PaymentType {

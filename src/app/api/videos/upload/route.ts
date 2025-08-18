@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToCloudinary } from '@/lib/cloudinary'
+import { sendVideoUploadNotification } from '@/lib/notifications'
 
 // Interface for file-like objects in Node.js environment
 interface FileLike {
@@ -105,6 +106,14 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('Database record created:', videoRecord)
+
+    // Send notifications to room members
+    try {
+      await sendVideoUploadNotification(videoRecord.id, session.user.id, room.id)
+    } catch (notificationError) {
+      console.error('Failed to send video upload notifications:', notificationError)
+      // Don't fail the upload if notifications fail
+    }
 
     return NextResponse.json({
       message: 'Video uploaded successfully',
