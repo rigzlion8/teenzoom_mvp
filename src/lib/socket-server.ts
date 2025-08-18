@@ -78,7 +78,7 @@ export const initSocket = (port?: number) => {
         connectedUsers.set(socket.id, {
           userId: user.id,
           username: user.username,
-          displayName: user.displayName,
+          displayName: user.displayName || user.username,
           roomId
         })
 
@@ -92,7 +92,7 @@ export const initSocket = (port?: number) => {
         socket.to(roomId).emit('user_joined', {
           userId: user.id,
           username: user.username,
-          displayName: user.displayName,
+          displayName: user.displayName || user.username,
           timestamp: new Date()
         })
 
@@ -102,7 +102,7 @@ export const initSocket = (port?: number) => {
           message: `Welcome to ${roomId}!`
         })
 
-        console.log(`User ${user.username} joined room ${roomId}`)
+        console.log(`User ${user.displayName || user.username} joined room ${roomId}`)
       } catch (error) {
         console.error('Error joining room:', error)
         socket.emit('error', { message: 'Failed to join room' })
@@ -136,7 +136,7 @@ export const initSocket = (port?: number) => {
           content: message.content,
           userId: message.userId,
           username: userData.username,
-          displayName: userData.displayName,
+          displayName: userData.displayName || userData.username,
           roomId: message.roomId,
           messageType: message.messageType as 'text' | 'image' | 'video' | 'audio' | 'file',
           fileUrl: message.fileUrl || undefined,
@@ -162,7 +162,7 @@ export const initSocket = (port?: number) => {
         socket.to(data.roomId).emit('user_typing', {
           userId: userData.userId,
           username: userData.username,
-          displayName: userData.displayName
+          displayName: userData.displayName || userData.username
         })
       }
     })
@@ -171,7 +171,9 @@ export const initSocket = (port?: number) => {
       const userData = connectedUsers.get(socket.id)
       if (userData) {
         socket.to(data.roomId).emit('user_stopped_typing', {
-          userId: userData.userId
+          userId: userData.userId,
+          username: userData.username,
+          displayName: userData.displayName || userData.username
         })
       }
     })
@@ -187,11 +189,11 @@ export const initSocket = (port?: number) => {
           socket.to(data.roomId).emit('user_left', {
             userId: userData.userId,
             username: userData.username,
-            displayName: userData.displayName,
+            displayName: userData.displayName || userData.username,
             timestamp: new Date()
           })
 
-          console.log(`User ${userData.username} left room ${data.roomId}`)
+          console.log(`User ${userData.displayName || userData.username} left room ${data.roomId}`)
         }
       } catch (error) {
         console.error('Error leaving room:', error)

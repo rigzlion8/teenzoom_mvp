@@ -283,7 +283,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
                             {message.displayName || message.username || 'Unknown'}
                           </span>
                           <span className="text-xs text-gray-400 flex-shrink-0">
-                            {new Date(message.createdAt).toLocaleTimeString()}
+                            {message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : 'Just now'}
                           </span>
                         </div>
                         <p className="text-white text-sm sm:text-base break-words">{message.content}</p>

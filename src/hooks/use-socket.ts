@@ -82,7 +82,7 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     newSocket.on('user_joined', (data: { username: string; displayName: string }) => {
       const systemMessage: ChatMessage = {
         id: `system-${Date.now()}`,
-        content: `${data.displayName} joined the room`,
+        content: `${data.displayName || data.username} joined the room`,
         userId: 'system',
         username: 'system',
         displayName: 'System',
@@ -96,7 +96,7 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     newSocket.on('user_left', (data: { username: string; displayName: string }) => {
       const systemMessage: ChatMessage = {
         id: `system-${Date.now()}`,
-        content: `${data.displayName} left the room`,
+        content: `${data.displayName || data.username} left the room`,
         userId: 'system',
         username: 'system',
         displayName: 'System',
@@ -109,16 +109,18 @@ export const useSocket = (roomId: string): UseSocketReturn => {
 
     newSocket.on('user_typing', (data: { username: string; displayName: string }) => {
       setTypingUsers(prev => {
-        if (!prev.includes(data.displayName)) {
-          return [...prev, data.displayName]
+        const displayName = data.displayName || data.username
+        if (!prev.includes(displayName)) {
+          return [...prev, displayName]
         }
         return prev
       })
     })
 
-    newSocket.on('user_stopped_typing', (data: { userId: string }) => {
+    newSocket.on('user_stopped_typing', (data: { userId: string; username: string; displayName: string }) => {
       // Find and remove the typing user
-      setTypingUsers(prev => prev.filter(username => username !== data.userId))
+      const displayName = data.displayName || data.username
+      setTypingUsers(prev => prev.filter(username => username !== displayName))
     })
 
     newSocket.on('room_joined', (data: { message: string }) => {
