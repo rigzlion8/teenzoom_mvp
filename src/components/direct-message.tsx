@@ -19,6 +19,8 @@ interface DirectMessageProps {
   friendId: string
   friendName: string
   friendUsername: string
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 interface Message {
@@ -44,10 +46,10 @@ interface Message {
   }
 }
 
-export function DirectMessage({ friendId, friendName, friendUsername }: DirectMessageProps) {
+export function DirectMessage({ friendId, friendName, friendUsername, isOpen, onClose }: DirectMessageProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalIsOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [showFileUpload, setShowFileUpload] = useState(false)
@@ -55,6 +57,20 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Use external state if provided, otherwise use internal state
+  const isDialogOpen = isOpen !== undefined ? isOpen : internalIsOpen
+  const setIsDialogOpen = (open: boolean) => {
+    if (isOpen !== undefined) {
+      // External control
+      if (!open && onClose) {
+        onClose()
+      }
+    } else {
+      // Internal control
+      setIsOpen(open)
+    }
+  }
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -85,12 +101,27 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
     }
   }, [session?.user?.id, friendId, toast])
 
+  const markMessagesAsRead = useCallback(async () => {
+    try {
+      await fetch('/api/messages/mark-read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ friendId })
+      })
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error)
+    }
+  }, [friendId])
+
   // Load messages when dialog opens
   useEffect(() => {
-    if (isOpen) {
+    if (isDialogOpen) {
       loadMessages()
+      markMessagesAsRead()
     }
-  }, [isOpen, loadMessages])
+  }, [isDialogOpen, loadMessages, markMessagesAsRead])
 
   const sendMessage = async (content: string, messageType: 'text' | 'image' | 'video' | 'audio' | 'file' = 'text', fileData?: {
     url: string
@@ -266,7 +297,7 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
           <MessageSquare className="h-4 w-4 mr-2" />
@@ -278,6 +309,17 @@ export function DirectMessage({ friendId, friendName, friendUsername }: DirectMe
           <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
             <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
             Message {friendName} (@{friendUsername})
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsDialogOpen(false)}
+                className="ml-auto text-gray-500 hover:text-gray-700"
+                title="Close conversation"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </DialogTitle>
         </DialogHeader>
         
