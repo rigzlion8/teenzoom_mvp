@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // 'discover' or 'friends'
+    const type = searchParams.get('type') // 'discover' | 'friends' | 'me' | null
 
     if (type === 'discover') {
       // Get all public livestreams
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       })
 
       return NextResponse.json({ livestreams })
-    } else if (type === 'friends') {
+    } else if (type === 'friends' || !type) {
       // Get friends' livestreams (both public and friends-only)
       const userFriendships = await prisma.friendship.findMany({
         where: {
@@ -142,6 +142,27 @@ export async function GET(request: NextRequest) {
       const livestreams = await prisma.personalLivestream.findMany({
         where: {
           streamerId: { in: friendIds },
+          isLive: true
+        },
+        include: {
+          streamer: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true
+            }
+          }
+        },
+        orderBy: {
+          startedAt: 'desc'
+        }
+      })
+
+      return NextResponse.json({ livestreams })
+    } else if (type === 'me') {
+      const livestreams = await prisma.personalLivestream.findMany({
+        where: {
+          streamerId: session.user.id,
           isLive: true
         },
         include: {

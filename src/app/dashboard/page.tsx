@@ -108,6 +108,8 @@ export default function DashboardPage() {
     return null
   }
 
+  const userInitial = (session.user.displayName || session.user.username || "?").slice(0, 1)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* Header */}
@@ -116,7 +118,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xl">
-                {session.user.displayName?.charAt(0) || session.user.username.charAt(0)}
+                {userInitial}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">

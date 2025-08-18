@@ -58,6 +58,8 @@ export default function ProfilePage() {
     return null
   }
 
+  const initial = (session.user.displayName || session.user.username || "?").slice(0, 1)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* Header */}
@@ -73,7 +75,7 @@ export default function ProfilePage() {
               </Link>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xl">
-                  {session.user.displayName?.charAt(0) || session.user.username.charAt(0)}
+                  {initial}
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">
@@ -95,7 +97,7 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="mb-8 text-center">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-3xl mx-auto mb-4">
-            {session.user.displayName?.charAt(0) || session.user.username.charAt(0)}
+            {initial}
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">
             {session.user.displayName || session.user.username}
