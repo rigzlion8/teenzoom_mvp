@@ -99,6 +99,31 @@ app.prepare().then(() => {
       socket.leave(roomId)
       socket.to(roomId).emit('user_left', { userId: socket.id })
     })
+
+    // Livestream events
+    socket.on('livestream_started', (data) => {
+      const { roomId, streamerId, streamerName } = data
+      console.log(`Livestream started in room ${roomId} by ${streamerName}`)
+      socket.to(roomId).emit('livestream_started', { streamerId, streamerName })
+    })
+
+    socket.on('livestream_ended', (data) => {
+      const { roomId } = data
+      console.log(`Livestream ended in room ${roomId}`)
+      socket.to(roomId).emit('livestream_ended')
+    })
+
+    socket.on('viewer_joined', (data) => {
+      const { roomId, userId } = data
+      console.log(`Viewer ${userId} joined livestream in room ${roomId}`)
+      socket.to(roomId).emit('viewer_joined')
+    })
+
+    socket.on('viewer_left', (data) => {
+      const { roomId, userId } = data
+      console.log(`Viewer ${userId} left livestream in room ${roomId}`)
+      socket.to(roomId).emit('viewer_left')
+    })
     
     socket.on('disconnect', () => {
       console.log('Socket.IO client disconnected:', socket.id)
