@@ -38,6 +38,7 @@ model User {
   sentPayments Payment[]   @relation("Sender")
   receivedPayments Payment[] @relation("Receiver")
   moderationLogs ModerationLog[]
+  ownedRooms   Room[]      @relation("RoomOwner")
 
   @@map("users")
 }
@@ -47,8 +48,17 @@ model Room {
   roomId     String   @unique
   name       String
   description String?
+  category   String   @default("general")
+  privacy    String   @default("public") // public, friends, private
   isPrivate  Boolean  @default(false)
   maxUsers   Int      @default(50)
+  isActive   Boolean  @default(true)
+  tags       String[]
+  lastActivity DateTime @default(now())
+  ownerId    String   @db.ObjectId
+  allowVideo Boolean  @default(true)
+  allowFileSharing Boolean @default(true)
+  requireApproval Boolean @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -56,6 +66,7 @@ model Room {
   members    RoomMember[]
   messages   Message[]
   videos     RoomVideo[]
+  owner      User     @relation("RoomOwner", fields: [ownerId], references: [id])
 
   @@map("rooms")
 }

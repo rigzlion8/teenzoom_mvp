@@ -35,7 +35,8 @@ async function main() {
       name: 'General',
       description: 'Welcome to TeenZoom! This is the main chat room.',
       isPrivate: false,
-      maxUsers: 100
+      maxUsers: 100,
+      ownerId: admin.id
     }
   })
 
