@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
       video.name,
       {
         resource_type: 'video',
-        folder: 'teenzoom-videos'
+        folder: 'teenzoom-videos',
+        generate_thumbnail: true, // Generate thumbnail
+        thumbnail_time: 1 // Take thumbnail at 1 second mark
       }
     )
 
@@ -64,27 +66,15 @@ export async function POST(request: NextRequest) {
 
     // Find a room to associate the video with (use the first available room or create one)
     let room = await prisma.room.findFirst({
-      where: { 
-        roomId: 'general',
-        // Don't filter by lastActivity since it might be null in existing records
-      },
-      select: {
-        id: true,
-        name: true,
-        roomId: true
-      }
+      where: { roomId: 'general' },
+      select: { id: true, name: true, roomId: true }
     })
 
     if (!room) {
-      // If no general room exists, use the first available room
       room = await prisma.room.findFirst({
-        select: {
-          id: true,
-          name: true,
-          roomId: true
-        }
+        select: { id: true, name: true, roomId: true }
       })
-      
+
       if (!room) {
         return NextResponse.json({ error: 'No rooms available for video upload' }, { status: 400 })
       }
@@ -98,21 +88,20 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         description: description?.trim() || null,
         videoUrl: uploadResult.secure_url,
-        thumbnailUrl: null, // Could generate thumbnail later
-        duration: uploadResult.duration || 0,
-        roomId: room.id, // Use the actual room ObjectID
+        thumbnailUrl: uploadResult.thumbnail_url || null,
+        duration: Math.round((uploadResult.duration || 0)),
+        roomId: room.id,
         uploadedBy: session.user.id
       }
     })
 
     console.log('Database record created:', videoRecord)
 
-    // Send notifications to room members
+    // Send notifications to room members (do not refetch room to avoid lastActivity null crash)
     try {
       await sendVideoUploadNotification(videoRecord.id, session.user.id, room.id)
     } catch (notificationError) {
       console.error('Failed to send video upload notifications:', notificationError)
-      // Don't fail the upload if notifications fail
     }
 
     return NextResponse.json({

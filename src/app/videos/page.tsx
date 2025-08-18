@@ -18,7 +18,8 @@ import {
   Eye,
   TrendingUp,
   Flame,
-  Star
+  Star,
+  RefreshCw
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -63,6 +64,8 @@ export default function VideosPage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showUpload, setShowUpload] = useState(false)
   const [videoCaption, setVideoCaption] = useState('')
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [lastUploadFile, setLastUploadFile] = useState<File | null>(null)
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -99,15 +102,9 @@ export default function VideosPage() {
       return
     }
 
-    // Validate caption
-    if (!videoCaption.trim()) {
-      toast({
-        title: "Caption Required",
-        description: "Please add a caption for your video before uploading.",
-        variant: "destructive"
-      })
-      return
-    }
+    // Store the file for potential retry
+    setLastUploadFile(file)
+    setUploadError(null)
     
     console.log('Video upload started with file:', file.name, file.size)
     setUploading(true)
@@ -127,14 +124,14 @@ export default function VideosPage() {
     try {
       const formData = new FormData()
       formData.append('video', file)
-      formData.append('title', videoCaption.trim())
-      formData.append('description', videoCaption.trim())
+      formData.append('title', videoCaption.trim() || `Video ${Date.now()}`)
+      formData.append('description', videoCaption.trim() || 'Uploaded video')
       formData.append('category', selectedCategory)
 
       console.log('FormData created:', {
         video: file.name,
-        title: videoCaption.trim(),
-        description: videoCaption.trim(),
+        title: videoCaption.trim() || `Video ${Date.now()}`,
+        description: videoCaption.trim() || 'Uploaded video',
         category: selectedCategory
       })
 
@@ -169,21 +166,39 @@ export default function VideosPage() {
           setUploading(false)
           setUploadProgress(0)
           setVideoCaption('') // Reset caption
+          setUploadError(null) // Clear any previous errors
+          setLastUploadFile(null) // Clear stored file
           fetchVideos()
         }, 500)
       } else {
         const errorData = await response.json().catch(() => 'Unknown error')
         console.log('Video upload error response:', errorData)
-        throw new Error('Upload failed')
+        
+        let errorMessage = 'Upload failed'
+        if (typeof errorData === 'object' && errorData.error) {
+          errorMessage = errorData.error
+          if (errorData.details) {
+            errorMessage += `: ${errorData.details}`
+          }
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData
+        }
+        
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error('Video upload error:', error)
       clearInterval(progressInterval)
       setUploading(false)
       setUploadProgress(0)
+      
+      // Set error message for retry functionality
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed due to network error'
+      setUploadError(errorMessage)
+      
       toast({
         title: "Upload Failed",
-        description: "Failed to upload video. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       })
     }
@@ -204,6 +219,39 @@ export default function VideosPage() {
       }
     } catch (error) {
       console.error('Error liking video:', error)
+    }
+  }
+
+  const regenerateThumbnail = async (videoId: string) => {
+    try {
+      const response = await fetch(`/api/videos/${videoId}/thumbnail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ time: 5 }) // Generate thumbnail at 5 seconds
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Update the video with new thumbnail
+        setVideos(prev => prev.map(video => 
+          video.id === videoId 
+            ? { ...video, thumbnailUrl: data.thumbnailUrl }
+            : video
+        ))
+        toast({
+          title: "Thumbnail Updated!",
+          description: "Video thumbnail has been regenerated successfully!",
+        })
+      } else {
+        throw new Error('Failed to regenerate thumbnail')
+      }
+    } catch (error) {
+      console.error('Error regenerating thumbnail:', error)
+      toast({
+        title: "Thumbnail Update Failed",
+        description: "Failed to regenerate thumbnail. Please try again.",
+        variant: "destructive"
+      })
     }
   }
 
@@ -259,12 +307,12 @@ export default function VideosPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="video-caption" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Video Caption *
+                    Video Caption (Optional)
                   </label>
                   <div className="relative">
                     <textarea
                       id="video-caption"
-                      placeholder="Write a compelling caption for your video..."
+                      placeholder="Write a compelling caption for your video... (optional)"
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                       rows={3}
                       maxLength={280}
@@ -276,6 +324,26 @@ export default function VideosPage() {
                     </div>
                   </div>
                 </div>
+                
+                {uploadError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+                      <span className="text-sm font-medium">Upload failed:</span>
+                      <span className="text-sm">{uploadError}</span>
+                    </div>
+                    {lastUploadFile && (
+                      <Button
+                        onClick={() => handleVideoUpload(lastUploadFile)}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Retry Upload
+                      </Button>
+                    )}
+                  </div>
+                )}
                 
                 <FileUpload
                   onFileSelect={handleVideoUpload}
@@ -289,6 +357,8 @@ export default function VideosPage() {
                     onClick={() => {
                       setShowUpload(false)
                       setVideoCaption('') // Reset caption when closing
+                      setUploadError(null) // Clear any errors
+                      setLastUploadFile(null) // Clear stored file
                     }} 
                     variant="outline"
                     disabled={uploading}
@@ -407,9 +477,22 @@ export default function VideosPage() {
                     {video.comments}
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm">
-                  <Share2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {session?.user?.id === video.author.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => regenerateThumbnail(video.id)}
+                      className="text-xs"
+                      title="Regenerate thumbnail"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="sm">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

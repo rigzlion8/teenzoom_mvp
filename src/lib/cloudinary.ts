@@ -16,6 +16,7 @@ export interface UploadResult {
   width?: number
   height?: number
   duration?: number
+  thumbnail_url?: string // Add thumbnail URL
 }
 
 export interface UploadOptions {
@@ -24,6 +25,8 @@ export interface UploadOptions {
   allowed_formats?: string[]
   max_file_size?: number // in bytes
   transformation?: Record<string, unknown>
+  generate_thumbnail?: boolean // Add option to generate thumbnail
+  thumbnail_time?: number // Time in seconds for thumbnail (default: 1 second)
 }
 
 export const uploadToCloudinary = async (
@@ -42,7 +45,9 @@ export const uploadToCloudinary = async (
       resource_type = 'auto',
       allowed_formats = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi', 'pdf', 'doc', 'docx'],
       max_file_size = 50 * 1024 * 1024, // 50MB default
-      transformation = {}
+      transformation = {},
+      generate_thumbnail = false,
+      thumbnail_time = 1
     } = options
 
     // Check file size
@@ -63,7 +68,8 @@ export const uploadToCloudinary = async (
           folder,
           resource_type,
           transformation,
-          public_id: `${folder}/${Date.now()}_${filename.replace(/\.[^/.]+$/, '')}`,
+          // Do NOT prefix folder again in public_id to avoid duplicate path
+          public_id: `${Date.now()}_${filename.replace(/\.[^/.]+$/, '')}`,
           overwrite: false,
           unique_filename: true,
         },
@@ -71,15 +77,25 @@ export const uploadToCloudinary = async (
           if (error) {
             reject(error)
           } else if (result) {
+            const r = result as unknown as {
+              public_id: string
+              secure_url: string
+              format: string
+              resource_type: string
+              bytes: number
+              width?: number
+              height?: number
+              duration?: number
+            }
             resolve({
-              public_id: result.public_id,
-              secure_url: result.secure_url,
-              format: result.format,
-              resource_type: result.resource_type,
-              bytes: result.bytes,
-              width: result.width,
-              height: result.height,
-              duration: result.duration,
+              public_id: r.public_id,
+              secure_url: r.secure_url,
+              format: r.format,
+              resource_type: r.resource_type,
+              bytes: r.bytes,
+              width: r.width,
+              height: r.height,
+              duration: r.duration,
             })
           } else {
             reject(new Error('Upload failed'))
@@ -90,9 +106,84 @@ export const uploadToCloudinary = async (
       uploadStream.end(file)
     })
 
+    // Generate thumbnail if requested and it's a video
+    if (generate_thumbnail && resource_type === 'video') {
+      try {
+        const thumbnailUrl = await generateVideoThumbnail(result.public_id, thumbnail_time)
+        result.thumbnail_url = thumbnailUrl
+      } catch (thumbnailError) {
+        console.warn('Failed to generate thumbnail:', thumbnailError)
+        // Don't fail the upload if thumbnail generation fails
+      }
+    }
+
     return result
   } catch (error) {
     console.error('Cloudinary upload error:', error)
+    throw error
+  }
+}
+
+// Function to generate video thumbnail
+export const generateVideoThumbnail = async (
+  publicId: string,
+  time: number = 1
+): Promise<string> => {
+  try {
+    // Generate thumbnail URL using Cloudinary's transformation
+    const thumbnailUrl = cloudinary.url(publicId, {
+      transformation: [
+        { width: 320, height: 180, crop: 'fill', gravity: 'auto' },
+        { start_offset: time, duration: 1, crop: 'scale' }
+      ],
+      format: 'jpg',
+      quality: 'auto',
+      resource_type: 'video'
+    })
+
+    return thumbnailUrl
+  } catch (error) {
+    console.error('Error generating thumbnail:', error)
+    throw error
+  }
+}
+
+// Function to generate thumbnail for existing videos
+export const generateThumbnailForExistingVideo = async (
+  publicId: string,
+  time: number = 1
+): Promise<string> => {
+  try {
+    // Use Cloudinary's video transformation to generate thumbnail
+    const thumbnailUrl = cloudinary.url(publicId, {
+      transformation: [
+        { width: 320, height: 180, crop: 'fill', gravity: 'auto' },
+        { start_offset: time, duration: 1, crop: 'scale' }
+      ],
+      format: 'jpg',
+      quality: 'auto',
+      resource_type: 'video'
+    })
+
+    return thumbnailUrl
+  } catch (error) {
+    console.error('Error generating thumbnail for existing video:', error)
+    throw error
+  }
+}
+
+// Function to get multiple thumbnail options
+export const generateMultipleThumbnails = async (
+  publicId: string,
+  times: number[] = [1, 5, 10, 15]
+): Promise<string[]> => {
+  try {
+    const thumbnails = await Promise.all(
+      times.map(time => generateVideoThumbnail(publicId, time))
+    )
+    return thumbnails
+  } catch (error) {
+    console.error('Error generating multiple thumbnails:', error)
     throw error
   }
 }

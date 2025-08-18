@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback } from 'react'
-import { Upload, X, File, Image, Video, Music, FileText, Loader2 } from 'lucide-react'
+import { Upload, X, File, Image, Video, Music, FileText, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +37,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([])
+  const [uploadErrors, setUploadErrors] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const getFileIcon = (file: File) => {
@@ -118,6 +119,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     if (errors.length > 0) {
       console.error('File validation errors:', errors)
+      setUploadErrors(prev => [...prev, ...errors])
       onUploadError?.(errors.join('\n'))
     }
 
@@ -133,7 +135,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       Array.from(files).forEach((originalFile, index) => {
         console.log(`Calling onFileSelect for file ${index}:`, originalFile.name)
         if (originalFile && originalFile.name && originalFile.type) {
-          onFileSelect(originalFile) // Use the original File object
+          onFileSelect(originalFile)
         } else {
           console.error('Skipping invalid file in onFileSelect:', originalFile)
         }
@@ -259,6 +261,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{file.file.name}</p>
                 <p className="text-xs text-muted-foreground">{formatFileSize(file.file.size)}</p>
+                {file.uploadStatus === 'error' && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Upload failed - click to retry
+                  </p>
+                )}
               </div>
               <Button
                 variant="ghost"
@@ -270,6 +277,40 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               </Button>
             </div>
           ))}
+          
+          {/* Upload Errors */}
+          {uploadErrors.length > 0 && (
+            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h5 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                Upload Errors:
+              </h5>
+              <ul className="text-xs text-red-700 dark:text-red-300 space-y-1">
+                {uploadErrors.map((error, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                    {error}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setUploadErrors([])
+                  // Retry upload for all files
+                  selectedFiles.forEach(fileWithPreview => {
+                    if (fileWithPreview.uploadStatus === 'error') {
+                      onFileSelect(fileWithPreview.file)
+                    }
+                  })
+                }}
+                className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry All
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -140,24 +140,22 @@ export async function sendVideoUploadNotification(
   roomId: string
 ) {
   try {
-    // Get video and room details
+    // Get video and minimal room/uploader details to avoid nullable field issues
     const [video, room, uploader] = await Promise.all([
       prisma.roomVideo.findUnique({ where: { id: videoId } }),
-      prisma.room.findUnique({ where: { id: roomId } }),
-      prisma.user.findUnique({ where: { id: uploaderId } })
+      prisma.room.findUnique({ where: { id: roomId }, select: { id: true, name: true } }),
+      prisma.user.findUnique({ where: { id: uploaderId }, select: { id: true, displayName: true } })
     ])
 
     if (!video || !room || !uploader) {
       throw new Error('Video, room, or uploader not found')
     }
 
-    // Get room members to notify
     const roomMembers = await prisma.roomMember.findMany({
       where: { roomId, userId: { not: uploaderId } },
-      include: { user: true }
+      select: { userId: true, user: { select: { email: true, displayName: true } } }
     })
 
-    // Create notifications for room members
     for (const member of roomMembers) {
       await createNotification(
         member.userId,
@@ -166,9 +164,7 @@ export async function sendVideoUploadNotification(
         `${uploader.displayName} uploaded "${video.title}" in ${room.name}`,
         { videoId, roomId, uploaderId }
       )
-
-      // Note: sendVideoUploadNotificationEmail doesn't exist, so we skip email for video uploads
-      // You can add this function to resend.ts if needed
+      // Email sending for video uploads is optional/disabled for now
     }
 
     console.log(`Video upload notifications sent to ${roomMembers.length} room members`)
