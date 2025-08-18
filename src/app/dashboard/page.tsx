@@ -14,10 +14,14 @@ import {
   Settings,
   Plus,
   Video,
-  Trophy
+  Trophy,
+  ArrowRight,
+  Users
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { DashboardNotifications } from '@/components/dashboard-notifications'
+import { CardDescription } from "@/components/ui/card"
+import Link from "next/link"
 
 interface UserStats {
   coins: number
@@ -181,9 +185,60 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions Cards */}
         <div className="mb-6 sm:mb-8">
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Quick Actions</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <Link href="/room/general" className="block">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group h-full">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400 mb-3" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">Real-time Chat</CardTitle>
+                  <CardDescription className="text-gray-300 text-sm">
+                    Join the general chat room
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+
+            <Link href="/videos" className="block">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group h-full">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <Video className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 mb-3" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">Video Sharing</CardTitle>
+                  <CardDescription className="text-gray-300 text-sm">
+                    Upload and watch videos
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+
+            <Link href="/rooms" className="block">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-200 cursor-pointer group h-full">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <Users className="w-8 h-8 sm:w-10 sm:h-10 text-green-400 mb-3" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">Community</CardTitle>
+                  <CardDescription className="text-gray-300 text-sm">
+                    Discover and join rooms
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          </div>
+        </div>
+
+        {/* Quick Actions Buttons */}
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">More Actions</h3>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button 
               onClick={() => handleJoinRoom("general")}
