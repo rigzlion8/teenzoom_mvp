@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback } from 'react'
-import { Upload, X, File, Image, Video, Music, FileText } from 'lucide-react'
+import { Upload, X, File, Image, Video, Music, FileText, Loader2 } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +13,8 @@ interface FileUploadProps {
   multiple?: boolean
   className?: string
   disabled?: boolean
+  uploading?: boolean
+  uploadProgress?: number
 }
 
 interface FileWithPreview {
@@ -29,7 +31,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   allowedTypes = ['image/*', 'video/*', 'audio/*', 'application/*'],
   multiple = false,
   className,
-  disabled = false
+  disabled = false,
+  uploading = false,
+  uploadProgress = 0
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([])
@@ -171,24 +175,50 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       {/* Drag & Drop Area */}
       <div
         className={cn(
-          "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+          "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer relative",
           isDragOver
             ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
             : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled && "opacity-50 cursor-not-all-allowed",
+          uploading && "cursor-not-allowed"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={openFileDialog}
       >
-        <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-        <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Drop files here or click to browse
-        </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Max file size: {maxFileSize}MB • Supported: Images, Videos, Audio, Documents
-        </p>
+        {uploading ? (
+          <div className="space-y-4">
+            <div className="relative">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            </div>
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Uploading Video...
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {uploadProgress}% Complete
+            </p>
+          </div>
+        ) : (
+          <>
+            <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Drop files here or click to browse
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Max file size: {maxFileSize}MB • Supported: Images, Videos, Audio, Documents
+            </p>
+          </>
+        )}
       </div>
 
       {/* Hidden File Input */}

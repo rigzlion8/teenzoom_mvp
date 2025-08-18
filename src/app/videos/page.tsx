@@ -60,6 +60,7 @@ export default function VideosPage() {
   const [selectedCategory, setSelectedCategory] = useState('trending')
   const [searchQuery, setSearchQuery] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [showUpload, setShowUpload] = useState(false)
 
   const fetchVideos = useCallback(async () => {
@@ -99,6 +100,19 @@ export default function VideosPage() {
     
     console.log('Video upload started with file:', file.name, file.size)
     setUploading(true)
+    setUploadProgress(0)
+    
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval)
+          return 90
+        }
+        return prev + Math.random() * 15
+      })
+    }, 200)
+    
     try {
       const formData = new FormData()
       formData.append('video', file)
@@ -130,12 +144,21 @@ export default function VideosPage() {
       if (response.ok) {
         const data = await response.json()
         console.log('Video upload success data:', data)
-        toast({
-          title: "Video Uploaded!",
-          description: "Your video has been uploaded successfully!",
-        })
-        setShowUpload(false)
-        fetchVideos()
+        
+        // Complete the progress
+        setUploadProgress(100)
+        
+        // Wait a moment to show 100% completion
+        setTimeout(() => {
+          toast({
+            title: "Video Uploaded!",
+            description: "Your video has been uploaded successfully!",
+          })
+          setShowUpload(false)
+          setUploading(false)
+          setUploadProgress(0)
+          fetchVideos()
+        }, 500)
       } else {
         const errorData = await response.json().catch(() => 'Unknown error')
         console.log('Video upload error response:', errorData)
@@ -143,13 +166,14 @@ export default function VideosPage() {
       }
     } catch (error) {
       console.error('Video upload error:', error)
+      clearInterval(progressInterval)
+      setUploading(false)
+      setUploadProgress(0)
       toast({
         title: "Upload Failed",
         description: "Failed to upload video. Please try again.",
         variant: "destructive"
       })
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -225,6 +249,8 @@ export default function VideosPage() {
                   onFileSelect={handleVideoUpload}
                   allowedTypes={['video/*']}
                   maxFileSize={100}
+                  uploading={uploading}
+                  uploadProgress={uploadProgress}
                 />
                 <div className="flex gap-2">
                   <Button 
