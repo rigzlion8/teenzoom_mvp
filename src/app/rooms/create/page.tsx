@@ -62,8 +62,13 @@ export default function CreateRoomPage() {
     setLoading(true)
 
     try {
-      console.log('Making API call to /api/rooms/create')
-      const response = await fetch('/api/rooms/create', {
+      // Check if we're in production and need to use a different base URL
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? `${window.location.origin}/api/rooms/create`
+        : '/api/rooms/create'
+      
+      console.log('Making API call to:', apiUrl)
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -137,7 +142,7 @@ export default function CreateRoomPage() {
         <p className="text-muted-foreground text-center">Build your own community space on TeenZoom</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6">
           {/* Basic Information */}
           <Card>
@@ -151,7 +156,10 @@ export default function CreateRoomPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => {
+                    console.log('Name input changed:', e.target.value)
+                    setFormData(prev => ({ ...prev, name: e.target.value }))
+                  }}
                   placeholder="Enter room name..."
                   required
                   maxLength={50}
@@ -321,6 +329,17 @@ export default function CreateRoomPage() {
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                console.log('Test button clicked')
+                console.log('Current form data:', formData)
+                console.log('Form validation:', formData.name.trim() ? 'Valid' : 'Invalid')
+              }}
+            >
+              Test Form
             </Button>
             <Button type="submit" disabled={loading || !formData.name.trim()}>
               {loading ? 'Creating Room...' : 'Create Room'}

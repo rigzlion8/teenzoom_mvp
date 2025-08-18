@@ -90,8 +90,13 @@ export default function VideosPage() {
       formData.append('description', 'Uploaded video')
       formData.append('category', selectedCategory)
 
-      console.log('Making API call to /api/videos/upload')
-      const response = await fetch('/api/videos/upload', {
+      // Check if we're in production and need to use a different base URL
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? `${window.location.origin}/api/videos/upload`
+        : '/api/videos/upload'
+      
+      console.log('Making API call to:', apiUrl)
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData
       })

@@ -48,52 +48,34 @@ export default function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {session?.user ? (
-              <>
-                <Link href="/dashboard" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                  <Home className="h-4 w-4" />
-                  <span>Dashboard</span>
+          <div className="hidden md:flex items-center space-x-4">
+              <Link href="/dashboard" className="text-sm font-medium transition-colors hover:text-primary">
+                Dashboard
+              </Link>
+              <Link href="/room/general" className="text-sm font-medium transition-colors hover:text-primary">
+                Chat
+              </Link>
+              <Link href="/friends" className="text-sm font-medium transition-colors hover:text-primary">
+                Friends
+              </Link>
+              <Link href="/rooms" className="text-sm font-medium transition-colors hover:text-primary">
+                Rooms
+              </Link>
+              <Link href="/videos" className="text-sm font-medium transition-colors hover:text-primary">
+                Videos
+              </Link>
+              <Link href="/leaderboards" className="text-sm font-medium transition-colors hover:text-primary">
+                Leaderboards
+              </Link>
+              {session?.user?.role === 'admin' || session?.user?.role === 'moderator' ? (
+                <Link href="/moderation" className="text-sm font-medium transition-colors hover:text-primary">
+                  Moderation
                 </Link>
-                
-                <Link href="/friends" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                  <Users className="h-4 w-4" />
-                  <span>Friends</span>
-                </Link>
-                
-                <Link href="/rooms" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Rooms</span>
-                </Link>
-                
-                <Link href="/videos" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                  <Video className="h-4 w-4" />
-                  <span>Videos</span>
-                </Link>
-                
-                <Link href="/leaderboards" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                  <Trophy className="h-4 w-4" />
-                  <span>Leaderboards</span>
-                </Link>
-                
-                {(session.user.role === 'admin' || session.user.role === 'moderator') && (
-                  <Link href="/moderation" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
-                    <Shield className="h-4 w-4" />
-                    <span>Moderation</span>
-                  </Link>
-                )}
-              </>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link href="/auth/signin">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
-                <Link href="/auth/signup">
-                  <Button>Sign Up</Button>
-                </Link>
-              </div>
-            )}
-          </div>
+              ) : null}
+              <Link href="/test-form" className="text-sm font-medium transition-colors hover:text-primary text-yellow-600">
+                Test Form
+              </Link>
+            </div>
 
           {/* User Menu / Mobile Menu Button */}
           {session?.user ? (
