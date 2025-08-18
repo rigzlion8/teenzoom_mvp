@@ -1,25 +1,22 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { FileUpload } from '@/components/ui/file-upload'
+import { VideoPlayer } from '@/components/ui/video-player'
 import { 
-  Video, 
   Upload, 
+  X, 
+  Search, 
+  Filter, 
   Heart, 
-  MessageCircle, 
-  Share2, 
-  Play, 
-  Clock, 
-  Eye,
-  TrendingUp,
-  Flame,
-  Star,
-  RefreshCw
+  RefreshCw,
+  MessageSquare
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -46,12 +43,12 @@ interface VideoItem {
 }
 
 const videoCategories = [
-  { id: 'trending', name: 'Trending', icon: TrendingUp, color: 'bg-red-500' },
-  { id: 'gaming', name: 'Gaming', icon: Play, color: 'bg-purple-500' },
-  { id: 'music', name: 'Music', icon: Flame, color: 'bg-pink-500' },
-  { id: 'comedy', name: 'Comedy', icon: Heart, color: 'bg-yellow-500' },
-  { id: 'education', name: 'Education', icon: Star, color: 'bg-blue-500' },
-  { id: 'lifestyle', name: 'Lifestyle', icon: Flame, color: 'bg-orange-500' },
+  { id: 'trending', name: 'Trending', icon: 'TrendingUp', color: 'bg-red-500' },
+  { id: 'gaming', name: 'Gaming', icon: 'Play', color: 'bg-purple-500' },
+  { id: 'music', name: 'Music', icon: 'Flame', color: 'bg-pink-500' },
+  { id: 'comedy', name: 'Comedy', icon: 'Heart', color: 'bg-yellow-500' },
+  { id: 'education', name: 'Education', icon: 'Star', color: 'bg-blue-500' },
+  { id: 'lifestyle', name: 'Lifestyle', icon: 'Flame', color: 'bg-orange-500' },
 ]
 
 export default function VideosPage() {
@@ -67,7 +64,7 @@ export default function VideosPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [lastUploadFile, setLastUploadFile] = useState<File | null>(null)
 
-  const fetchVideos = useCallback(async () => {
+  const fetchVideos = async () => {
     try {
       const response = await fetch(`/api/videos?category=${selectedCategory}`)
       if (response.ok) {
@@ -77,11 +74,11 @@ export default function VideosPage() {
     } catch (error) {
       console.error('Error fetching videos:', error)
     }
-  }, [selectedCategory])
+  }
 
   useEffect(() => {
     fetchVideos()
-  }, [fetchVideos])
+  }, [selectedCategory])
 
   const handleVideoUpload = async (file: File) => {
     console.log('handleVideoUpload called with file:', file)
@@ -225,57 +222,37 @@ export default function VideosPage() {
   const regenerateThumbnail = async (videoId: string) => {
     try {
       const response = await fetch(`/api/videos/${videoId}/thumbnail`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ time: 5 }) // Generate thumbnail at 5 seconds
+        method: 'POST'
       })
-
+      
       if (response.ok) {
-        const data = await response.json()
-        // Update the video with new thumbnail
-        setVideos(prev => prev.map(video => 
-          video.id === videoId 
-            ? { ...video, thumbnailUrl: data.thumbnailUrl }
-            : video
-        ))
         toast({
-          title: "Thumbnail Updated!",
-          description: "Video thumbnail has been regenerated successfully!",
+          title: "Success",
+          description: "Thumbnail regenerated successfully!",
         })
+        fetchVideos() // Refresh the video list
       } else {
-        throw new Error('Failed to regenerate thumbnail')
+        const error = await response.json()
+        toast({
+          title: "Error",
+          description: error.error || "Failed to regenerate thumbnail",
+          variant: "destructive"
+        })
       }
     } catch (error) {
       console.error('Error regenerating thumbnail:', error)
       toast({
-        title: "Thumbnail Update Failed",
-        description: "Failed to regenerate thumbnail. Please try again.",
+        title: "Error",
+        description: "Failed to regenerate thumbnail",
         variant: "destructive"
       })
     }
   }
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
-    return views.toString()
-  }
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
-    return `${Math.floor(diffInHours / 168)}w ago`
+  const handleRetryUpload = () => {
+    if (lastUploadFile) {
+      handleVideoUpload(lastUploadFile)
+    }
   }
 
   return (
@@ -293,9 +270,9 @@ export default function VideosPage() {
               <Upload className="h-5 w-5" />
               Share Your Video
             </CardTitle>
-            <CardDescription>
+            {/* <CardDescription>
               Upload videos to share with the TeenZoom community
-            </CardDescription>
+            </CardDescription> */}
           </CardHeader>
           <CardContent>
             {!showUpload ? (
@@ -306,11 +283,11 @@ export default function VideosPage() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="video-caption" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="video-caption" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Video Caption (Optional)
-                  </label>
+                  </Label>
                   <div className="relative">
-                    <textarea
+                    <Textarea
                       id="video-caption"
                       placeholder="Write a compelling caption for your video... (optional)"
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
@@ -333,7 +310,7 @@ export default function VideosPage() {
                     </div>
                     {lastUploadFile && (
                       <Button
-                        onClick={() => handleVideoUpload(lastUploadFile)}
+                        onClick={handleRetryUpload}
                         variant="outline"
                         size="sm"
                         className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
@@ -393,115 +370,68 @@ export default function VideosPage() {
               onClick={() => setSelectedCategory(category.id)}
               className="flex items-center gap-2"
             >
-              <category.icon className="h-4 w-4" />
+              {/* <category.icon className="h-4 w-4" /> */}
               {category.name}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Videos Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* Video Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
-          <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative">
-              <img
-                src={video.thumbnailUrl || '/placeholder-video.jpg'}
-                alt={video.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all flex items-center justify-center">
-                <Button size="sm" variant="secondary" className="opacity-0 hover:opacity-100 transition-opacity">
-                  <Play className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                {formatDuration(video.duration)}
-              </div>
-            </div>
+          <div key={video.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+            <VideoPlayer
+              videoUrl={video.videoUrl}
+              thumbnailUrl={video.thumbnailUrl}
+              title={video.title}
+              videoId={video.id}
+              onForward={() => {
+                // Refresh videos after forwarding
+                fetchVideos()
+              }}
+            />
             
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-900 dark:text-white">
-                {video.title}
-              </h3>
+            {/* Video Info */}
+            <div className="p-4">
               {video.description && video.description !== video.title && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                   {video.description}
                 </p>
               )}
               
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium">
-                  {video.author.displayName.charAt(0)}
-                </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {video.author.displayName}
-                </span>
-                <span className="text-xs text-muted-foreground">@{video.author.username}</span>
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                <span>By {video.author.displayName || video.author.username}</span>
+                <span>{video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}` : 'Unknown'}</span>
               </div>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  {formatViews(video.views)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatTimeAgo(video.createdAt)}
-                </span>
-              </div>
-
-              {video.tags && video.tags.length > 0 && (
-                <div className="flex items-center gap-2 mb-3">
-                  {video.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleLike(video.id)}
-                    className={`flex items-center gap-1 ${video.isLiked ? 'text-red-500' : ''}`}
-                  >
-                    <Heart className={`h-4 w-4 ${video.isLiked ? 'fill-current' : ''}`} />
-                    {video.likes}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                    <MessageCircle className="h-4 w-4" />
-                    {video.comments}
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  {session?.user?.id === video.author.id && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => regenerateThumbnail(video.id)}
-                      className="text-xs"
-                      title="Regenerate thumbnail"
-                    >
-                      <RefreshCw className="h-3 w-3" />
-                    </Button>
-                  )}
+              
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm">
-                    <Share2 className="h-4 w-4" />
+                    <Heart className="h-4 w-4" />
+                    <span className="ml-1">Like</span>
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="ml-1">Comment</span>
                   </Button>
                 </div>
+                
+                {session?.user?.id === video.author.id && (
+                  <Button onClick={() => regenerateThumbnail(video.id)}>
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
       {videos.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
+          {/* <Video className="h-16 w-16 mx-auto mb-4 opacity-50" /> */}
           <p className="text-lg">No videos found in this category</p>
           <p className="text-sm">Try selecting a different category or upload the first video!</p>
         </div>

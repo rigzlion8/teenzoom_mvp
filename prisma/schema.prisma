@@ -40,6 +40,7 @@ model User {
   moderationLogs ModerationLog[]
   ownedRooms   Room[]      @relation("RoomOwner")
   notifications Notification[]
+  uploadedVideos RoomVideo[] @relation("VideoAuthor")
 
   @@map("users")
 }
@@ -116,11 +117,14 @@ model RoomVideo {
   duration  Int?
   roomId    String   @db.ObjectId
   uploadedBy String  @db.ObjectId
+  isForwarded Boolean @default(false)
+  originalVideoId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  author    User     @relation("VideoAuthor", fields: [uploadedBy], references: [id], onDelete: Cascade)
 
   @@map("room_videos")
 }
