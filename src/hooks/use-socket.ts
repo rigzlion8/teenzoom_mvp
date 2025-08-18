@@ -42,10 +42,10 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     initSocketServer()
 
     // Use the current window location for Socket.IO connection
-    // Socket.IO will run on a different port to avoid conflicts
+    // Socket.IO is now integrated on the same port as the main app
     const socketUrl = typeof window !== 'undefined' 
-      ? `${window.location.protocol}//${window.location.hostname}:${(parseInt(window.location.port || '3000', 10) + 1)}`
-      : 'http://localhost:3001'
+      ? `${window.location.protocol}//${window.location.host}`
+      : 'http://localhost:3000'
 
     console.log('Connecting to Socket.IO at:', socketUrl)
 

@@ -1,6 +1,7 @@
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
+const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
@@ -12,7 +13,8 @@ const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
-  createServer(async (req, res) => {
+  // Create HTTP server
+  const server = createServer(async (req, res) => {
     try {
       // Parse the URL
       const parsedUrl = parse(req.url, true)
@@ -26,6 +28,85 @@ app.prepare().then(() => {
       res.end('Internal Server Error')
     }
   })
+
+  // Create Socket.IO server attached to the same HTTP server
+  const io = new Server(server, {
+    cors: {
+      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+      methods: ["GET", "POST"]
+    },
+    addTrailingSlash: false
+  })
+
+  // Socket.IO connection handling
+  io.on('connection', (socket) => {
+    console.log('Socket.IO client connected:', socket.id)
+    
+    // Join room
+    socket.on('join_room', async (data) => {
+      try {
+        const { roomId, userId } = data
+        console.log(`User ${userId} joining room ${roomId}`)
+        
+        // Join the room
+        socket.join(roomId)
+        
+        // Notify others in the room
+        socket.to(roomId).emit('user_joined', {
+          userId: userId,
+          timestamp: new Date()
+        })
+        
+        console.log(`User ${userId} joined room ${roomId}`)
+      } catch (error) {
+        console.error('Error joining room:', error)
+      }
+    })
+
+    // Send message
+    socket.on('send_message', async (data) => {
+      try {
+        const { content, roomId, messageType } = data
+        console.log(`Message in room ${roomId}: ${content}`)
+        
+        // Broadcast message to room
+        io.to(roomId).emit('new_message', {
+          id: `msg-${Date.now()}`,
+          content,
+          roomId,
+          messageType: messageType || 'text',
+          timestamp: new Date()
+        })
+      } catch (error) {
+        console.error('Error sending message:', error)
+      }
+    })
+
+    // Typing indicators
+    socket.on('typing_start', (data) => {
+      const { roomId } = data
+      socket.to(roomId).emit('user_typing', { userId: socket.id })
+    })
+
+    socket.on('typing_stop', (data) => {
+      const { roomId } = data
+      socket.to(roomId).emit('user_stopped_typing', { userId: socket.id })
+    })
+
+    // Leave room
+    socket.on('leave_room', (data) => {
+      const { roomId } = data
+      socket.leave(roomId)
+      socket.to(roomId).emit('user_left', { userId: socket.id })
+    })
+    
+    socket.on('disconnect', () => {
+      console.log('Socket.IO client disconnected:', socket.id)
+    })
+  })
+
+  // Start the server
+  server
     .once('error', (err) => {
       console.error('Server error:', err)
       process.exit(1)
@@ -34,6 +115,6 @@ app.prepare().then(() => {
       console.log(`> Ready on http://${hostname}:${port}`)
       console.log(`> Environment: ${process.env.NODE_ENV}`)
       console.log(`> Port: ${port}`)
-      console.log(`> Note: Socket.IO will use a different port`)
+      console.log(`> Socket.IO integrated on same port`)
     })
 })
