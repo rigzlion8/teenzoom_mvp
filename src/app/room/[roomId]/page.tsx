@@ -203,9 +203,9 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col overflow-hidden">
       {/* Room Header */}
-      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4">
+      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-4">
             <Button
@@ -214,18 +214,18 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
               className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10"
               onClick={handleBackToDashboard}
             >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:w-5" />
             </Button>
             
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold text-white">{roomInfo.name}</h1>
-              <p className="text-xs sm:text-sm text-gray-300">{roomInfo.description}</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-bold text-white truncate">{roomInfo.name}</h1>
+              <p className="text-xs sm:text-sm text-gray-300 truncate">{roomInfo.description}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* Connection Status */}
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden sm:flex items-center gap-1 sm:gap-2">
               {isConnected ? (
                 <Wifi className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
               ) : (
@@ -239,7 +239,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
               </Badge>
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-2 text-white">
+            <div className="hidden sm:flex items-center gap-1 sm:gap-2 text-white">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="text-xs sm:text-sm">{roomInfo.memberCount} online</span>
             </div>
@@ -251,10 +251,10 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
         </div>
       </header>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Messages */}
-        <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
+      {/* Chat Area - Fixed height container */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Messages - Scrollable area */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
           {messages.length === 0 ? (
             <div className="text-center text-gray-400 py-6 sm:py-8">
               <p className="text-sm sm:text-base">
@@ -311,8 +311,8 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
           )}
         </div>
 
-        {/* Message Input */}
-        <div className="p-3 sm:p-4 border-t border-white/20">
+        {/* Message Input - Fixed at bottom */}
+        <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm p-2 sm:p-3 md:p-4 flex-shrink-0">
           {/* File Upload Section */}
           {showFileUpload && (
             <div className="mb-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
@@ -324,7 +324,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
                   onClick={() => setShowFileUpload(false)}
                   className="text-gray-400 hover:text-white"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
               <FileUpload
@@ -337,7 +337,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
+          <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3 items-end">
             <div className="flex-1 relative">
               <Input
                 ref={inputRef}
@@ -346,7 +346,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
                 onKeyPress={handleKeyPress}
                 placeholder={isConnected ? "Type your message..." : "Connecting..."}
                 disabled={!isConnected}
-                className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 pr-20 sm:pr-24 text-sm sm:text-base py-2 sm:py-3 disabled:opacity-50"
+                className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 pr-16 sm:pr-20 md:pr-24 text-sm sm:text-base py-2 sm:py-3 disabled:opacity-50"
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
                 <Button
@@ -354,48 +354,48 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowFileUpload(!showFileUpload)}
-                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 hover:text-white"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400 hover:text-white"
                   disabled={!isConnected}
                   title="Attach file"
                 >
-                  <Paperclip className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Paperclip className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 hover:text-white"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400 hover:text-white"
                   disabled={!isConnected}
                 >
-                  <Smile className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Smile className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 hover:text-white"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400 hover:text-white"
                   disabled={!isConnected}
                 >
-                  <Video className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Video className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 hover:text-white"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400 hover:text-white"
                   disabled={!isConnected}
                 >
-                  <Mic className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>
             
             <Button
               type="submit"
-              className="bg-purple-600 hover:bg-purple-700 px-3 sm:px-6 py-2 sm:py-3 disabled:opacity-50"
+              className="bg-purple-600 hover:bg-purple-700 px-3 sm:px-6 py-2 sm:py-3 disabled:opacity-50 flex-shrink-0"
               disabled={!newMessage.trim() || !isConnected}
             >
-              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </form>
         </div>
