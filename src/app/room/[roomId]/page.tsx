@@ -115,6 +115,24 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
     }
   }, [autoGoLive, isStreaming, status, startStream])
 
+  // Handle invite parameter
+  const inviteParam = searchParams?.get('invite')
+  const [inviteNotification, setInviteNotification] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (inviteParam && session?.user) {
+      // Show invite notification
+      setInviteNotification(`You've been invited to this room!`)
+      // Clear the invite param from URL after showing notification
+      const url = new URL(window.location.href)
+      url.searchParams.delete('invite')
+      window.history.replaceState({}, '', url.toString())
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => setInviteNotification(null), 5000)
+    }
+  }, [inviteParam, session?.user])
+
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'loading') return
@@ -308,6 +326,13 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
           </div>
         </div>
       </header>
+
+      {/* Invite Notification */}
+      {inviteNotification && (
+        <div className="bg-blue-600 text-white px-4 py-3 text-center animate-pulse">
+          <p className="text-sm font-medium">{inviteNotification}</p>
+        </div>
+      )}
 
       {/* Chat Area - Fixed height container */}
       <div className="flex-1 flex flex-col min-h-0">

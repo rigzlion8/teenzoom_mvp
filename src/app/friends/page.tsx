@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Search, UserPlus, Users, UserCheck, UserX, MessageCircle, Video } from 'lucide-react'
+import { Search, UserPlus, Users, UserCheck, UserX, MessageCircle, Video, Mail } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
@@ -56,6 +56,9 @@ export default function FriendsPage() {
   const [rooms, setRooms] = useState<Array<{ id: string; roomId: string; name: string }>>([])
   const [isLoadingRooms, setIsLoadingRooms] = useState(false)
   const [selectedRoomId, setSelectedRoomId] = useState('')
+  const [showInviteDialog, setShowInviteDialog] = useState(false)
+  const [inviteTargetFriend, setInviteTargetFriend] = useState<Friend | null>(null)
+  const [inviteSelectedRoomId, setInviteSelectedRoomId] = useState('')
 
   useEffect(() => {
     if (session?.user) {
@@ -95,6 +98,13 @@ export default function FriendsPage() {
     await loadUserRooms()
   }
 
+  const openInviteToRoom = async (friend: Friend) => {
+    setInviteTargetFriend(friend)
+    setShowInviteDialog(true)
+    setInviteSelectedRoomId('')
+    await loadUserRooms()
+  }
+
   type ApiRoom = { id: string; roomId: string; name: string; isMember?: boolean }
 
   const loadUserRooms = async () => {
@@ -124,6 +134,15 @@ export default function FriendsPage() {
     // Navigate to room with goLive flag and optional invite param
     const invite = liveTargetFriend?.id ? `&invite=${liveTargetFriend.id}` : ''
     router.push(`/room/${room.roomId}?goLive=1${invite}`)
+  }
+
+  const inviteFriendToRoom = () => {
+    if (!inviteSelectedRoomId) return
+    const room = rooms.find(r => r.id === inviteSelectedRoomId)
+    if (!room) return
+    
+    // Navigate to room with invite param
+    router.push(`/room/${room.roomId}?invite=${inviteTargetFriend?.id}`)
   }
 
   const searchUsers = async () => {
@@ -356,16 +375,28 @@ export default function FriendsPage() {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      {friend.isOnline && (
-                        <Button
-                          size="sm"
-                          onClick={() => openGoLiveWithFriend(friend)}
-                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto flex items-center gap-2"
-                        >
-                          <Video className="h-4 w-4" />
-                          Go Live
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openInviteToRoom(friend)}
+                        className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white w-full sm:w-auto flex items-center gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        Invite to Room
+                      </Button>
+                      {/* Debug: Show online status */}
+                      <span className="text-xs text-gray-400 px-2 py-1 bg-white/10 rounded">
+                        {friend.isOnline ? 'Online' : 'Offline'}
+                      </span>
+                      {/* Go Live button - now visible for all friends for testing */}
+                      <Button
+                        size="sm"
+                        onClick={() => openGoLiveWithFriend(friend)}
+                        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto flex items-center gap-2"
+                      >
+                        <Video className="h-4 w-4" />
+                        Go Live
+                      </Button>
                       <DirectMessage
                         friendId={friend.id}
                         friendName={friend.displayName || friend.username}
@@ -420,6 +451,44 @@ export default function FriendsPage() {
                 <Button variant="outline" onClick={() => setShowGoLiveDialog(false)}>Cancel</Button>
                 <Button onClick={startLiveInSelectedRoom} disabled={!selectedRoomId} className="bg-green-600 hover:bg-green-700">
                   <Video className="h-4 w-4 mr-2" /> Start Live
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite to Room Dialog */}
+        <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite {inviteTargetFriend ? inviteTargetFriend.displayName : 'Friend'} to Room</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Choose a room to invite your friend to:</p>
+                <Select value={inviteSelectedRoomId} onValueChange={setInviteSelectedRoomId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingRooms ? 'Loading rooms...' : 'Select a room'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingRooms ? (
+                      <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    ) : rooms.length === 0 ? (
+                      <SelectItem value="none" disabled>No rooms found</SelectItem>
+                    ) : (
+                      rooms.map((room) => (
+                        <SelectItem key={room.id} value={room.id}>
+                          {room.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowInviteDialog(false)}>Cancel</Button>
+                <Button onClick={inviteFriendToRoom} disabled={!inviteSelectedRoomId} className="bg-blue-600 hover:bg-blue-700">
+                  <Mail className="h-4 w-4 mr-2" /> Invite
                 </Button>
               </div>
             </div>
