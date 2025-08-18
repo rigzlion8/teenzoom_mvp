@@ -63,12 +63,26 @@ export async function POST(request: NextRequest) {
 
     // Find a room to associate the video with (use the first available room or create one)
     let room = await prisma.room.findFirst({
-      where: { roomId: 'general' }
+      where: { 
+        roomId: 'general',
+        // Don't filter by lastActivity since it might be null in existing records
+      },
+      select: {
+        id: true,
+        name: true,
+        roomId: true
+      }
     })
 
     if (!room) {
-      // If no general room exists, create one or use the first available room
-      room = await prisma.room.findFirst()
+      // If no general room exists, use the first available room
+      room = await prisma.room.findFirst({
+        select: {
+          id: true,
+          name: true,
+          roomId: true
+        }
+      })
       
       if (!room) {
         return NextResponse.json({ error: 'No rooms available for video upload' }, { status: 400 })
