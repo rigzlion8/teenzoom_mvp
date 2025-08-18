@@ -126,6 +126,39 @@ app.prepare().then(() => {
       console.log(`Viewer ${userId} left livestream in room ${roomId}`)
       socket.to(roomId).emit('viewer_left')
     })
+
+    // Personal livestream events
+    socket.on('personal_livestream_started', (data) => {
+      const { streamId, streamerId, streamerName, title, privacy } = data
+      console.log(`Personal livestream started by ${streamerName}: ${title}`)
+      
+      if (privacy === 'public') {
+        // Broadcast to all users for public streams
+        socket.broadcast.emit('personal_livestream_started', data)
+      } else {
+        // For friends-only, we'll need to get the user's friends and emit to them
+        // This is a simplified version - in production you'd want to get the actual friend list
+        socket.broadcast.emit('personal_livestream_started', data)
+      }
+    })
+
+    socket.on('personal_livestream_ended', (data) => {
+      const { streamId } = data
+      console.log(`Personal livestream ended: ${streamId}`)
+      socket.broadcast.emit('personal_livestream_ended', data)
+    })
+
+    socket.on('personal_viewer_joined', (data) => {
+      const { streamId, userId } = data
+      console.log(`Viewer ${userId} joined personal livestream ${streamId}`)
+      socket.broadcast.emit('personal_viewer_joined', data)
+    })
+
+    socket.on('personal_viewer_left', (data) => {
+      const { streamId, userId } = data
+      console.log(`Viewer ${userId} left personal livestream ${streamId}`)
+      socket.broadcast.emit('personal_viewer_left', data)
+    })
     
     socket.on('disconnect', () => {
       console.log('Socket.IO client disconnected:', socket.id)

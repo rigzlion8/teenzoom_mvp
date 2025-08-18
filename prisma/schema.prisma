@@ -43,6 +43,7 @@ model User {
   uploadedVideos RoomVideo[] @relation("VideoAuthor")
   sentMessages DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
+  personalLivestreams PersonalLivestream[] @relation("PersonalLivestreams")
 
   @@map("users")
 }
@@ -219,6 +220,25 @@ model DirectMessage {
   receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@map("direct_messages")
+}
+
+model PersonalLivestream {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  streamerId  String   @db.ObjectId
+  title       String
+  description String?
+  privacy     String   @default("public") // "public" or "friends-only"
+  isLive      Boolean  @default(false)
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  viewerCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  streamer    User     @relation("PersonalLivestreams", fields: [streamerId], references: [id], onDelete: Cascade)
+
+  @@map("personal_livestreams")
 }
 
 // Enums

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,11 +16,16 @@ import {
   Video,
   Trophy,
   ArrowRight,
-  Users
+  Users,
+  Globe,
+  Lock
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { DashboardNotifications } from '@/components/dashboard-notifications'
 import { CardDescription } from "@/components/ui/card"
+import { GoLiveDialog } from '@/components/go-live-dialog'
+import { LiveStreamsDisplay } from '@/components/live-streams-display'
+import { PersonalLivestreamViewer } from '@/components/personal-livestream-viewer'
 import Link from "next/link"
 
 interface UserStats {
@@ -35,6 +40,39 @@ export default function DashboardPage() {
   const router = useRouter()
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [currentStream, setCurrentStream] = useState<{
+    title: string
+    privacy: string
+    viewerCount: number
+  } | null>(null)
+
+  const checkCurrentStream = useCallback(async () => {
+    try {
+      const response = await fetch('/api/livestream/personal')
+      if (response.ok) {
+        const data = await response.json()
+        // Check if user has an active stream
+        const activeStream = data.livestreams?.find((stream: { streamer: { id: string }; isLive: boolean; title: string; privacy: string; viewerCount?: number }) => 
+          stream.streamer.id === session?.user?.id && stream.isLive
+        )
+        
+        if (activeStream) {
+          setIsStreaming(true)
+          setCurrentStream({
+            title: activeStream.title,
+            privacy: activeStream.privacy,
+            viewerCount: activeStream.viewerCount || 0
+          })
+        } else {
+          setIsStreaming(false)
+          setCurrentStream(null)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check current stream:', error)
+    }
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -47,8 +85,9 @@ export default function DashboardPage() {
         vipLifetime: session.user.vipLifetime || false
       })
       setIsLoading(false)
+      checkCurrentStream()
     }
-  }, [session, status, router])
+  }, [session, status, router, checkCurrentStream])
 
   const handleSignOut = () => {
     signOut({ callbackUrl: "/" })
@@ -127,6 +166,65 @@ export default function DashboardPage() {
             Ready to connect with friends and explore new rooms?
           </p>
         </div>
+
+        {/* Current Stream Info */}
+        {isStreaming && currentStream && (
+          <div className="mb-6 sm:mb-8">
+            <Card className="bg-green-900/20 backdrop-blur-sm border-green-500/30">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      <Video className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">
+                        You&apos;re Live: {currentStream.title}
+                      </h3>
+                      <div className="flex items-center gap-3 text-sm text-green-300">
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          LIVE
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {currentStream.viewerCount} watching
+                        </span>
+                        <span className="flex items-center gap-1">
+                          {currentStream.privacy === 'public' ? (
+                            <>
+                              <Globe className="h-4 w-4" />
+                              Public
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="h-4 w-4" />
+                              Friends Only
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={() => {
+                      // This will be handled by the PersonalLivestreamViewer
+                      // For now, just show a message
+                      alert("Use the Stop Stream button in the stream viewer to end your stream")
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Stop Stream
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -240,6 +338,15 @@ export default function DashboardPage() {
         <div className="mb-6 sm:mb-8">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">More Actions</h3>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <GoLiveDialog>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-sm sm:text-base py-2 sm:py-3"
+                disabled={isStreaming}
+              >
+                <Video className="w-4 h-4 mr-2" />
+                {isStreaming ? 'Already Live' : 'Go Live'}
+              </Button>
+            </GoLiveDialog>
             <Button 
               onClick={() => handleJoinRoom("general")}
               className="bg-purple-600 hover:bg-purple-700 text-sm sm:text-base py-2 sm:py-3"
@@ -274,10 +381,33 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Live Streams Section */}
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Live Streams</h3>
+          <div className="grid gap-6">
+            {/* Friends' Live Streams */}
+            <LiveStreamsDisplay
+              type="friends"
+              title="Friends Live"
+              description="Watch streams from your friends"
+            />
+            
+            {/* Public Live Streams */}
+            <LiveStreamsDisplay
+              type="discover"
+              title="Discover Live"
+              description="Find and join public streams from the community"
+            />
+          </div>
+        </div>
+
         {/* Recent Activity */}
         <div className="mb-8">
           <DashboardNotifications />
         </div>
+
+        {/* Personal Livestream Viewer */}
+        <PersonalLivestreamViewer onClose={() => {}} />
       </div>
     </div>
   )
