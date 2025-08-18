@@ -256,65 +256,74 @@ export default function FriendsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Friends</h1>
-          <p className="text-gray-300 text-lg">Connect with other teens on TeenZoom</p>
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-6xl">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">Friends</h1>
+          <p className="text-gray-300 text-base sm:text-lg">Connect with other teens on TeenZoom</p>
         </div>
 
         {/* Search Users */}
-        <Card className="mb-8 bg-white/10 backdrop-blur-sm border-white/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+        <Card className="mb-6 sm:mb-8 bg-white/10 backdrop-blur-sm border-white/20">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
               <Search className="h-5 w-5" />
               Find New Friends
             </CardTitle>
-            <CardDescription className="text-gray-300">
+            <CardDescription className="text-gray-300 text-sm sm:text-base">
               Search for users by username or display name
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                placeholder="Enter username or display name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && searchUsers()}
-                className="flex-1"
-              />
-              <Button onClick={searchUsers} disabled={loading} className="w-full sm:w-auto">
-                {loading ? 'Searching...' : 'Search'}
-              </Button>
-            </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  placeholder="Enter username or display name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && searchUsers()}
+                  className="flex-1 text-base"
+                />
+                <Button 
+                  onClick={searchUsers} 
+                  disabled={loading} 
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 h-10"
+                >
+                  {loading ? 'Searching...' : 'Search'}
+                </Button>
+              </div>
             
             {searchResults.length > 0 && (
               <div className="mt-4 space-y-3">
                 {searchResults.map((user) => (
-                  <div key={user.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-white/20 rounded-lg bg-white/5">
-                    <div className="mb-3 sm:mb-0">
-                      <p className="font-medium text-white">{user.displayName}</p>
-                      <p className="text-sm text-gray-300">@{user.username}</p>
+                  <div key={user.id} className="p-4 border border-white/20 rounded-lg bg-white/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-white text-lg">{user.displayName}</p>
+                        <p className="text-sm text-gray-300">@{user.username}</p>
+                        <Badge variant="outline" className="mt-2">Level {user.level}</Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => sendFriendRequest(user.id)}
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Add Friend
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => sendFriendRequest(user.id)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Add Friend
-                    </Button>
                   </div>
                 ))}
               </div>
             )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Friend Requests */}
         {friendRequests.length > 0 && (
-          <Card className="mb-8 bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+          <Card className="mb-6 sm:mb-8 bg-white/10 backdrop-blur-sm border-white/20">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
                 <UserPlus className="h-5 w-5" />
                 Friend Requests ({friendRequests.length})
               </CardTitle>
@@ -322,30 +331,32 @@ export default function FriendsPage() {
             <CardContent>
               <div className="space-y-3">
                 {friendRequests.map((request) => (
-                  <div key={request.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-white/20 rounded-lg bg-white/5">
-                    <div className="mb-3 sm:mb-0">
-                      <p className="font-medium text-white">{request.fromUser.displayName}</p>
-                      <p className="text-sm text-gray-300">@{request.fromUser.username}</p>
-                      <Badge variant="secondary" className="mt-1">Level {request.fromUser.level}</Badge>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => respondToFriendRequest(request.id, 'accept')}
-                        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-                      >
-                        <UserCheck className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => respondToFriendRequest(request.id, 'reject')}
-                        className="w-full sm:w-auto"
-                      >
-                        <UserX className="h-4 w-4 mr-1" />
-                        Reject
-                      </Button>
+                  <div key={request.id} className="p-4 border border-white/20 rounded-lg bg-white/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-white text-lg">{request.fromUser.displayName}</p>
+                        <p className="text-sm text-gray-300">@{request.fromUser.username}</p>
+                        <Badge variant="secondary" className="mt-2">Level {request.fromUser.level}</Badge>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <Button
+                          size="sm"
+                          onClick={() => respondToFriendRequest(request.id, 'accept')}
+                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                        >
+                          <UserCheck className="h-4 w-4 mr-1" />
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => respondToFriendRequest(request.id, 'reject')}
+                          className="w-full sm:w-auto"
+                        >
+                          <UserX className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -356,8 +367,8 @@ export default function FriendsPage() {
 
         {/* Friends List */}
         <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
               <Users className="h-5 w-5" />
               Your Friends ({friends.length})
             </CardTitle>
@@ -379,67 +390,84 @@ export default function FriendsPage() {
                 <p>No friends yet. Start searching for new friends above!</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {friends.map((friend) => (
-                  <div key={friend.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-white/20 rounded-lg bg-white/5">
-                    <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                      <div className="relative">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                  <div key={friend.id} className="p-4 border border-white/20 rounded-lg bg-white/5">
+                    {/* Friend Info Section */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-lg">
                           {friend.displayName.charAt(0)}
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
                           friend.isOnline ? 'bg-green-500' : 'bg-gray-400'
                         }`} />
                       </div>
-                      <div>
-                        <p className="font-medium text-white">{friend.displayName}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-white text-lg truncate">{friend.displayName}</p>
                         <p className="text-sm text-gray-300">@{friend.username}</p>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                          <Badge variant="outline" className="w-fit">Level {friend.level}</Badge>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">Level {friend.level}</Badge>
                           <span className="text-xs text-gray-400">
                             {friend.isOnline ? 'Online' : `Last seen ${new Date(friend.lastSeen).toLocaleDateString()}`}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
+
+                    {/* Action Buttons - Responsive Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                      {/* Message Button - Full width on mobile */}
+                      <div className="col-span-2 md:col-span-1">
+                        <DirectMessage
+                          friendId={friend.id}
+                          friendName={friend.displayName || friend.username}
+                          friendUsername={friend.username}
+                        />
+                      </div>
+                      
+                      {/* Go Live Button */}
+                      <Button
+                        size="sm"
+                        onClick={() => openGoLiveWithFriend(friend)}
+                        className="bg-green-600 hover:bg-green-700 text-xs h-9"
+                      >
+                        <Video className="h-3 w-3 mr-1" />
+                        <span className="hidden sm:inline">Go Live</span>
+                        <span className="sm:hidden">Live</span>
+                      </Button>
+                      
+                      {/* Invite to Room Button */}
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => openInviteToRoom(friend)}
-                        className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white w-full sm:w-auto flex items-center gap-2"
+                        className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white text-xs h-9"
                       >
-                        <Mail className="h-4 w-4" />
-                        Invite to Room
+                        <Mail className="h-3 w-3 mr-1" />
+                        <span className="hidden sm:inline">Invite</span>
+                        <span className="sm:hidden">Invite</span>
                       </Button>
-                      {/* Debug: Show online status */}
-                      <span className="text-xs text-gray-400 px-2 py-1 bg-white/10 rounded">
-                        {friend.isOnline ? 'Online' : 'Offline'}
-                      </span>
-                      {/* Go Live button - now visible for all friends for testing */}
-                      <Button
-                        size="sm"
-                        onClick={() => openGoLiveWithFriend(friend)}
-                        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto flex items-center gap-2"
-                      >
-                        <Video className="h-4 w-4" />
-                        Go Live
-                      </Button>
-                      <DirectMessage
-                        friendId={friend.id}
-                        friendName={friend.displayName || friend.username}
-                        friendUsername={friend.username}
-                      />
+                      
+                      {/* Remove Friend Button */}
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => removeFriend(friend.id)}
-                        className="text-red-600 hover:text-red-700 border-red-600 hover:bg-red-600 hover:text-white w-full sm:w-auto"
+                        className="text-red-600 hover:text-red-700 border-red-600 hover:bg-red-600 hover:text-white text-xs h-9"
                       >
-                        <UserX className="h-4 w-4 mr-1" />
-                        Remove
+                        <UserX className="h-3 w-3 mr-1" />
+                        <span className="hidden sm:inline">Remove</span>
+                        <span className="sm:hidden">Remove</span>
                       </Button>
                     </div>
+
+                    {/* Debug Info - Mobile Only */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="mt-3 p-2 bg-yellow-900/20 border border-yellow-500/30 rounded text-xs text-yellow-200">
+                        <span className="font-bold">Status:</span> {friend.isOnline ? 'Online' : 'Offline'}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -475,9 +503,9 @@ export default function FriendsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowGoLiveDialog(false)}>Cancel</Button>
-                <Button onClick={startLiveInSelectedRoom} disabled={!selectedRoomId} className="bg-green-600 hover:bg-green-700">
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowGoLiveDialog(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button onClick={startLiveInSelectedRoom} disabled={!selectedRoomId} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                   <Video className="h-4 w-4 mr-2" /> Start Live
                 </Button>
               </div>
@@ -513,9 +541,9 @@ export default function FriendsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowInviteDialog(false)}>Cancel</Button>
-                <Button onClick={inviteFriendToRoom} disabled={!inviteSelectedRoomId} className="bg-blue-600 hover:bg-blue-700">
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowInviteDialog(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button onClick={inviteFriendToRoom} disabled={!inviteSelectedRoomId} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
                   <Mail className="h-4 w-4 mr-2" /> Invite
                 </Button>
               </div>
