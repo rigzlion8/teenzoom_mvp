@@ -48,12 +48,18 @@ export async function GET(request: NextRequest) {
         ? friendship.friend 
         : friendship.user
       
+      // Calculate online status (online if lastSeen is within 2 minutes)
+      const lastSeenTime = friend.lastSeen ? new Date(friend.lastSeen).getTime() : 0
+      const timeDiff = Date.now() - lastSeenTime
+      const isOnline = lastSeenTime > 0 && timeDiff < 2 * 60 * 1000 // 2 minutes
+      
+      console.log(`Friend ${friend.username}: lastSeen=${friend.lastSeen}, timeDiff=${timeDiff}ms, isOnline=${isOnline}`)
+      
       return {
         id: friend.id,
         username: friend.username,
         displayName: friend.displayName,
-        isOnline: friend.lastSeen ? 
-          (Date.now() - new Date(friend.lastSeen).getTime()) < 5 * 60 * 1000 : false, // 5 minutes
+        isOnline,
         lastSeen: friend.lastSeen,
         level: friend.level,
         xp: friend.xp

@@ -64,14 +64,32 @@ export default function FriendsPage() {
     if (session?.user) {
       fetchFriends()
       fetchFriendRequests()
+      updateOnlineStatus()
+      
+      // Update online status every 30 seconds
+      const interval = setInterval(updateOnlineStatus, 30000)
+      return () => clearInterval(interval)
     }
   }, [session])
+
+  const updateOnlineStatus = async () => {
+    try {
+      await fetch('/api/users/online-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOnline: true })
+      })
+    } catch (error) {
+      console.error('Failed to update online status:', error)
+    }
+  }
 
   const fetchFriends = async () => {
     try {
       const response = await fetch('/api/friends')
       if (response.ok) {
         const data = await response.json()
+        console.log('Friends API response:', data)
         setFriends(data.friends)
       }
     } catch (error) {
@@ -345,6 +363,16 @@ export default function FriendsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Debug Info */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded text-xs text-yellow-200">
+                <p className="font-bold mb-2">Debug Info:</p>
+                <pre className="whitespace-pre-wrap overflow-auto">
+                  {JSON.stringify(friends, null, 2)}
+                </pre>
+              </div>
+            )}
+            
             {friends.length === 0 ? (
               <div className="text-center py-8 text-gray-300">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />

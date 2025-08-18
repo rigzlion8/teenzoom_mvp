@@ -168,7 +168,23 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
 
   // Core livestream functions
   const startStream = useCallback(async () => {
-    if (!agoraClientRef.current || !session?.user) return
+    if (!session?.user) {
+      console.error('No session user available')
+      return
+    }
+
+    if (!agoraClientRef.current) {
+      console.error('Agora client not initialized')
+      return
+    }
+
+    console.log('Starting stream with session user:', {
+      id: session.user.id,
+      username: session.user.username,
+      displayName: session.user.displayName,
+      name: (session.user as { name?: string }).name,
+      email: session.user.email
+    })
 
     try {
       // Create local tracks
@@ -213,13 +229,16 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
       setIsStreaming(true)
       setIsLive(true)
       setStreamerId(session.user.id)
-      setStreamerName(session.user.displayName || session.user.username || 'Unknown')
+      const finalStreamerName = session.user.displayName || session.user.username || 'Unknown'
+      setStreamerName(finalStreamerName)
+      
+      console.log('Stream started with streamerName:', finalStreamerName)
 
       // Notify others via Socket.IO
       socket?.emit('livestream_started', {
         roomId,
         streamerId: session.user.id,
-        streamerName: session.user.displayName || session.user.username || 'Unknown'
+        streamerName: finalStreamerName
       })
 
     } catch (error) {
