@@ -109,8 +109,10 @@ export const uploadToCloudinary = async (
     // Generate thumbnail if requested and it's a video
     if (generate_thumbnail && resource_type === 'video') {
       try {
+        console.log('Generating thumbnail for video:', result.public_id)
         const thumbnailUrl = await generateVideoThumbnail(result.public_id, thumbnail_time)
         result.thumbnail_url = thumbnailUrl
+        console.log('Thumbnail generated successfully:', thumbnailUrl)
       } catch (thumbnailError) {
         console.warn('Failed to generate thumbnail:', thumbnailError)
         // Don't fail the upload if thumbnail generation fails
@@ -131,16 +133,18 @@ export const generateVideoThumbnail = async (
 ): Promise<string> => {
   try {
     // Generate thumbnail URL using Cloudinary's transformation
+    // For videos, we need to use a simpler approach that Cloudinary can handle
     const thumbnailUrl = cloudinary.url(publicId, {
       transformation: [
-        { width: 320, height: 180, crop: 'fill', gravity: 'auto' },
-        { start_offset: time, duration: 1, crop: 'scale' }
+        { width: 320, height: 180, crop: 'fill' },
+        { start_offset: time }
       ],
       format: 'jpg',
       quality: 'auto',
       resource_type: 'video'
     })
 
+    console.log('Generated thumbnail URL:', thumbnailUrl)
     return thumbnailUrl
   } catch (error) {
     console.error('Error generating thumbnail:', error)

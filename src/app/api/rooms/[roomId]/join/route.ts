@@ -17,7 +17,8 @@ export async function POST(
 
     // Check if room exists
     const room = await prisma.room.findUnique({
-      where: { id: roomId }
+      where: { id: roomId },
+      select: { id: true, name: true, maxUsers: true }
     })
 
     if (!room) {

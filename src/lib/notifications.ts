@@ -180,11 +180,14 @@ export async function sendRoomInvitationNotification(
   roomId: string
 ) {
   try {
-    // Get user and room details
+    // Get user and room details - select only safe fields to avoid lastActivity null issues
     const [inviter, invitee, room] = await Promise.all([
       prisma.user.findUnique({ where: { id: inviterId } }),
       prisma.user.findUnique({ where: { id: inviteeId } }),
-      prisma.room.findUnique({ where: { id: roomId } })
+      prisma.room.findUnique({ 
+        where: { id: roomId }, 
+        select: { id: true, name: true, description: true, roomId: true }
+      })
     ])
 
     if (!inviter || !invitee || !room) {
