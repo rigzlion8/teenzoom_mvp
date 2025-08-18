@@ -72,9 +72,6 @@ export default function Navigation() {
                   Moderation
                 </Link>
               ) : null}
-              <Link href="/test-form" className="text-sm font-medium transition-colors hover:text-primary text-yellow-600">
-                Test Form
-              </Link>
             </div>
 
           {/* User Menu / Mobile Menu Button */}
