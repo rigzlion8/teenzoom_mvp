@@ -4,6 +4,14 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 
+// Interface for file-like objects in Node.js environment
+interface FileLike {
+  name: string
+  type: string
+  size: number
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -12,22 +20,16 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const video = formData.get('video') as File
+    const video = formData.get('video') as FileLike
     const title = formData.get('title') as string
     const description = formData.get('description') as string
-    const category = formData.get('category') as string
 
     if (!video) {
       return NextResponse.json({ error: 'Video file is required' }, { status: 400 })
     }
 
-    // Validate that video is actually a File object
-    if (!(video instanceof File)) {
-      return NextResponse.json({ error: 'Invalid file object' }, { status: 400 })
-    }
-
-    // Validate file properties
-    if (!video.name || !video.type || video.size === 0) {
+    // Validate that video has the properties we need
+    if (!video.name || !video.type || !video.size || video.size === 0) {
       return NextResponse.json({ error: 'Invalid video file' }, { status: 400 })
     }
 

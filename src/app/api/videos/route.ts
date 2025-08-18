@@ -14,29 +14,22 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || 'trending'
     const search = searchParams.get('search')
 
-    // Build where clause
+    // Build where clause - only search by title and description since RoomVideo doesn't have category/tags
     const where: {
-      category?: string
       OR?: Array<{
         title?: { contains: string; mode: 'insensitive' }
         description?: { contains: string; mode: 'insensitive' }
-        tags?: { has: string }
       }>
     } = {}
-
-    if (category && category !== 'all') {
-      where.category = category
-    }
 
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search } }
+        { description: { contains: search, mode: 'insensitive' } }
       ]
     }
 
-    // Get videos with author information
+    // Get videos with room information
     const videos = await prisma.roomVideo.findMany({
       where,
       include: {
@@ -69,7 +62,7 @@ export async function GET(request: NextRequest) {
         displayName: 'User' // Mock data for now
       },
       tags: [], // Mock data for now
-      category: category,
+      category: category, // Keep this for frontend compatibility
       createdAt: video.createdAt,
       isLiked: false // Mock data for now
     }))
