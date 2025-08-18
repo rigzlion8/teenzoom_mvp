@@ -61,6 +61,22 @@ export async function POST(request: NextRequest) {
 
     console.log('Cloudinary upload successful:', uploadResult)
 
+    // Find a room to associate the video with (use the first available room or create one)
+    let room = await prisma.room.findFirst({
+      where: { roomId: 'general' }
+    })
+
+    if (!room) {
+      // If no general room exists, create one or use the first available room
+      room = await prisma.room.findFirst()
+      
+      if (!room) {
+        return NextResponse.json({ error: 'No rooms available for video upload' }, { status: 400 })
+      }
+    }
+
+    console.log('Using room for video:', room.id, room.name)
+
     // Create video record in database
     const videoRecord = await prisma.roomVideo.create({
       data: {
@@ -69,7 +85,7 @@ export async function POST(request: NextRequest) {
         videoUrl: uploadResult.secure_url,
         thumbnailUrl: null, // Could generate thumbnail later
         duration: uploadResult.duration || 0,
-        roomId: 'general', // Default to general room for now
+        roomId: room.id, // Use the actual room ObjectID
         uploadedBy: session.user.id
       }
     })
