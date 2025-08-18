@@ -48,17 +48,9 @@ export async function GET(request: NextRequest) {
             userId: true,
             role: true
           }
-        },
-        owner: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true
-          }
         }
       },
       orderBy: [
-        { lastActivity: 'desc' },
         { createdAt: 'desc' }
       ]
     })
@@ -72,15 +64,19 @@ export async function GET(request: NextRequest) {
         id: room.id,
         name: room.name,
         description: room.description,
-        category: room.category,
-        privacy: room.privacy,
+        category: 'general', // Default for now
+        privacy: 'public', // Default for now
         memberCount,
         maxMembers: room.maxUsers,
-        isActive: room.isActive,
-        tags: room.tags,
+        isActive: true, // Default for now
+        tags: [], // Default for now
         createdAt: room.createdAt,
-        lastActivity: room.lastActivity,
-        owner: room.owner,
+        lastActivity: room.createdAt, // Use createdAt for now
+        owner: {
+          id: 'system',
+          username: 'system',
+          displayName: 'System'
+        },
         isMember
       }
     })

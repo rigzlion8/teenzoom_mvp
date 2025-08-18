@@ -58,17 +58,23 @@ export default function CreateRoomPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted with data:', formData)
     setLoading(true)
 
     try {
+      console.log('Making API call to /api/rooms/create')
       const response = await fetch('/api/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
+      console.log('API response status:', response.status)
+      console.log('API response headers:', response.headers)
+
       if (response.ok) {
         const data = await response.json()
+        console.log('API response data:', data)
         toast({
           title: "Room Created!",
           description: `"${formData.name}" has been created successfully!`,
@@ -76,6 +82,7 @@ export default function CreateRoomPage() {
         router.push(`/room/${data.room.id}`)
       } else {
         const error = await response.json()
+        console.log('API error response:', error)
         toast({
           title: "Error",
           description: error.message || "Failed to create room",
@@ -83,6 +90,7 @@ export default function CreateRoomPage() {
         })
       }
     } catch (error) {
+      console.error('Form submission error:', error)
       toast({
         title: "Error",
         description: "Failed to create room. Please try again.",

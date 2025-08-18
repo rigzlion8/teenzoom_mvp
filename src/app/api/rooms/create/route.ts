@@ -5,43 +5,49 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Room creation API called')
+    
     const session = await getServerSession(authOptions)
+    console.log('Session check result:', !!session?.user?.id)
+    
     if (!session?.user?.id) {
+      console.log('Unauthorized access attempt')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const body = await request.json()
+    console.log('Received room creation data:', body)
+    
     const {
       name,
       description,
-      category,
-      privacy,
-      maxMembers,
-      allowVideo,
-      allowFileSharing,
-      requireApproval,
-      tags
-    } = await request.json()
+      maxMembers
+    } = body
 
     if (!name || !name.trim()) {
+      console.log('Missing room name')
       return NextResponse.json({ error: 'Room name is required' }, { status: 400 })
     }
 
-    // Create the room
+    console.log('Creating room with data:', {
+      name: name.trim(),
+      description: description?.trim() || null,
+      maxUsers: maxMembers || 50
+    })
+
+    // Create the room with current schema fields
     const room = await prisma.room.create({
       data: {
         roomId: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: name.trim(),
-        description: description?.trim() || null,
-        category: category || 'general',
-        privacy: privacy || 'public',
+        description: description?.trim() || 'No description',
         maxUsers: maxMembers || 50,
-        allowVideo: allowVideo !== undefined ? allowVideo : true,
-        allowFileSharing: allowFileSharing !== undefined ? allowFileSharing : true,
-        requireApproval: requireApproval || false,
-        tags: tags || [],
+        isPrivate: false,
         ownerId: session.user.id
       }
     })
+
+    console.log('Room created successfully:', room.id)
 
     // Add the creator as the first member with admin role
     await prisma.roomMember.create({
@@ -52,24 +58,23 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('Room member added successfully')
+
     return NextResponse.json({
       message: 'Room created successfully',
       room: {
         id: room.id,
         name: room.name,
         description: room.description,
-        category: room.category,
-        privacy: room.privacy,
         maxMembers: room.maxUsers,
-        allowVideo: room.allowVideo,
-        allowFileSharing: room.allowFileSharing,
-        requireApproval: room.requireApproval,
-        tags: room.tags,
         createdAt: room.createdAt
       }
     })
   } catch (error) {
     console.error('Error creating room:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

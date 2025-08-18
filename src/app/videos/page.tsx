@@ -81,6 +81,7 @@ export default function VideosPage() {
   const handleVideoUpload = async (file: File) => {
     if (!file) return
     
+    console.log('Video upload started with file:', file.name, file.size)
     setUploading(true)
     try {
       const formData = new FormData()
@@ -89,12 +90,18 @@ export default function VideosPage() {
       formData.append('description', 'Uploaded video')
       formData.append('category', selectedCategory)
 
+      console.log('Making API call to /api/videos/upload')
       const response = await fetch('/api/videos/upload', {
         method: 'POST',
         body: formData
       })
 
+      console.log('Video upload response status:', response.status)
+      console.log('Video upload response headers:', response.headers)
+
       if (response.ok) {
+        const data = await response.json()
+        console.log('Video upload success data:', data)
         toast({
           title: "Video Uploaded!",
           description: "Your video has been uploaded successfully!",
@@ -102,9 +109,12 @@ export default function VideosPage() {
         setShowUpload(false)
         fetchVideos()
       } else {
+        const errorData = await response.json().catch(() => 'Unknown error')
+        console.log('Video upload error response:', errorData)
         throw new Error('Upload failed')
       }
     } catch (error) {
+      console.error('Video upload error:', error)
       toast({
         title: "Upload Failed",
         description: "Failed to upload video. Please try again.",
