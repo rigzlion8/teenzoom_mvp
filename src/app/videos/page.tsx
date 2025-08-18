@@ -62,6 +62,7 @@ export default function VideosPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showUpload, setShowUpload] = useState(false)
+  const [videoCaption, setVideoCaption] = useState('')
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -97,6 +98,16 @@ export default function VideosPage() {
       console.error('handleVideoUpload received non-File object:', typeof file, file)
       return
     }
+
+    // Validate caption
+    if (!videoCaption.trim()) {
+      toast({
+        title: "Caption Required",
+        description: "Please add a caption for your video before uploading.",
+        variant: "destructive"
+      })
+      return
+    }
     
     console.log('Video upload started with file:', file.name, file.size)
     setUploading(true)
@@ -116,14 +127,14 @@ export default function VideosPage() {
     try {
       const formData = new FormData()
       formData.append('video', file)
-      formData.append('title', `Video ${Date.now()}`)
-      formData.append('description', 'Uploaded video')
+      formData.append('title', videoCaption.trim())
+      formData.append('description', videoCaption.trim())
       formData.append('category', selectedCategory)
 
       console.log('FormData created:', {
         video: file.name,
-        title: `Video ${Date.now()}`,
-        description: 'Uploaded video',
+        title: videoCaption.trim(),
+        description: videoCaption.trim(),
         category: selectedCategory
       })
 
@@ -157,6 +168,7 @@ export default function VideosPage() {
           setShowUpload(false)
           setUploading(false)
           setUploadProgress(0)
+          setVideoCaption('') // Reset caption
           fetchVideos()
         }, 500)
       } else {
@@ -245,6 +257,26 @@ export default function VideosPage() {
               </Button>
             ) : (
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="video-caption" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Video Caption *
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      id="video-caption"
+                      placeholder="Write a compelling caption for your video..."
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                      rows={3}
+                      maxLength={280}
+                      value={videoCaption}
+                      onChange={(e) => setVideoCaption(e.target.value)}
+                    />
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                      {videoCaption.length}/280
+                    </div>
+                  </div>
+                </div>
+                
                 <FileUpload
                   onFileSelect={handleVideoUpload}
                   allowedTypes={['video/*']}
@@ -254,7 +286,10 @@ export default function VideosPage() {
                 />
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => setShowUpload(false)} 
+                    onClick={() => {
+                      setShowUpload(false)
+                      setVideoCaption('') // Reset caption when closing
+                    }} 
                     variant="outline"
                     disabled={uploading}
                   >
@@ -316,14 +351,22 @@ export default function VideosPage() {
             </div>
             
             <CardContent className="p-4">
-              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{video.description}</p>
+              <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-900 dark:text-white">
+                {video.title}
+              </h3>
+              {video.description && video.description !== video.title && (
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {video.description}
+                </p>
+              )}
               
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-medium">
                   {video.author.displayName.charAt(0)}
                 </div>
-                <span className="text-sm font-medium">{video.author.displayName}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {video.author.displayName}
+                </span>
                 <span className="text-xs text-muted-foreground">@{video.author.username}</span>
               </div>
 
@@ -338,13 +381,15 @@ export default function VideosPage() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 mb-3">
-                {video.tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
+              {video.tags && video.tags.length > 0 && (
+                <div className="flex items-center gap-2 mb-3">
+                  {video.tags.slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
