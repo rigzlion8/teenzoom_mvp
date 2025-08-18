@@ -1,185 +1,252 @@
 "use client"
 
-import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { 
   Home, 
-  MessageCircle, 
   Users, 
+  MessageSquare, 
   Video, 
-  Coins, 
-  LogOut,
-  Menu,
-  X
-} from "lucide-react"
-import { useState } from "react"
+  Trophy, 
+  Shield, 
+  Menu, 
+  X,
+  Plus,
+  User,
+  Settings,
+  LogOut
+} from 'lucide-react'
 
-export function Navigation() {
+export default function Navigation() {
   const { data: session } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
-  if (!session?.user) {
-    return (
-      <nav className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                TeenZoom
-              </h1>
-              <Badge variant="secondary" className="bg-purple-600 text-white">
-                v2.0
-              </Badge>
-            </Link>
-            
-            <div className="hidden md:flex items-center gap-4">
-              <Link href="/auth/signin">
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
 
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-white"
-              onClick={toggleMobileMenu}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-          </div>
-
-          {/* Mobile menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-white/20">
-              <div className="flex flex-col gap-2 pt-4">
-                <Link href="/auth/signin">
-                  <Button variant="outline" className="w-full border-white text-white hover:bg-white hover:text-gray-900">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/auth/signup">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
-    )
+  const handleSignOut = () => {
+    signOut()
+    closeMobileMenu()
   }
 
   return (
-    <nav className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              TeenZoom
-            </h1>
-            <Badge variant="secondary" className="bg-purple-600 text-white">
-              v2.0
-            </Badge>
-          </Link>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2 text-white hover:text-purple-300 transition-colors">
-              <Home className="w-4 h-4" />
-              Dashboard
-            </Link>
-            <Link href="/rooms" className="flex items-center gap-2 text-white hover:text-purple-300 transition-colors">
-              <MessageCircle className="w-4 h-4" />
-              Rooms
-            </Link>
-            <Link href="/friends" className="flex items-center gap-2 text-white hover:text-purple-300 transition-colors">
-              <Users className="w-4 h-4" />
-              Friends
-            </Link>
-            <Link href="/videos" className="flex items-center gap-2 text-white hover:text-purple-300 transition-colors">
-              <Video className="w-4 h-4" />
-              Videos
-            </Link>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-2 text-white">
-              <Coins className="w-4 h-4 text-yellow-400" />
-              <span className="font-semibold">{session.user.coins || 0}</span>
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">T</span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <span className="font-bold text-xl">TeenZoom</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            {session?.user ? (
+              <>
+                <Link href="/dashboard" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                  <Home className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
+                
+                <Link href="/friends" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                  <Users className="h-4 w-4" />
+                  <span>Friends</span>
+                </Link>
+                
+                <Link href="/rooms" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Rooms</span>
+                </Link>
+                
+                <Link href="/videos" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                  <Video className="h-4 w-4" />
+                  <span>Videos</span>
+                </Link>
+                
+                <Link href="/leaderboards" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                  <Trophy className="h-4 w-4" />
+                  <span>Leaderboards</span>
+                </Link>
+                
+                {(session.user.role === 'admin' || session.user.role === 'moderator') && (
+                  <Link href="/moderation" className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors">
+                    <Shield className="h-4 w-4" />
+                    <span>Moderation</span>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link href="/auth/signin">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button>Sign Up</Button>
+                </Link>
+              </div>
+            )}
           </div>
 
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-white"
-            onClick={toggleMobileMenu}
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          {/* User Menu / Mobile Menu Button */}
+          {session?.user ? (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link href="/rooms/create">
+                <Button size="sm" className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Create Room</span>
+                </Button>
+              </Link>
+              
+              <div className="relative group">
+                <Button variant="ghost" className="flex items-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>{session.user.displayName || session.user.username}</span>
+                </Button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-background border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="py-1">
+                    <Link href="/dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-accent">
+                      Dashboard
+                    </Link>
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-foreground hover:bg-accent">
+                      <Settings className="h-4 w-4 inline mr-2" />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-accent"
+                    >
+                      <LogOut className="h-4 w-4 inline mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="md:hidden">
+              <Button variant="ghost" onClick={toggleMobileMenu}>
+                <Menu className="h-6 w-6" />
+              </Button>
+            </div>
+          )}
+
+          {/* Mobile Menu Button */}
+          {session?.user && (
+            <Button variant="ghost" className="md:hidden" onClick={toggleMobileMenu}>
+              <Menu className="h-6 w-6" />
+            </Button>
+          )}
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-white/20">
-            <div className="flex flex-col gap-2 pt-4">
-              <Link href="/dashboard" className="flex items-center gap-2 text-white py-2 px-3 rounded hover:bg-white/10">
-                <Home className="w-4 h-4" />
-                Dashboard
-              </Link>
-              <Link href="/rooms" className="flex items-center gap-2 text-white py-2 px-3 rounded hover:bg-white/10">
-                <MessageCircle className="w-4 h-4" />
-                Rooms
-              </Link>
-              <Link href="/friends" className="flex items-center gap-2 text-white py-2 px-3 rounded hover:bg-white/10">
-                <Users className="w-4 h-4" />
-                Friends
-              </Link>
-              <Link href="/videos" className="flex items-center gap-2 text-white py-2 px-3 rounded hover:bg-white/10">
-                <Video className="w-4 h-4" />
-                Videos
-              </Link>
-              <div className="border-t border-white/20 my-2"></div>
-              <div className="flex items-center gap-2 text-white py-2 px-3">
-                <Coins className="w-4 h-4 text-yellow-400" />
-                <span className="font-semibold">{session.user.coins || 0} coins</span>
-              </div>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-white hover:bg-white/10"
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+          <div className="md:hidden border-t border-border">
+            <div className="py-4 space-y-2">
+              {session?.user ? (
+                <>
+                  <Link 
+                    href="/dashboard" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Home className="h-4 w-4 inline mr-2" />
+                    Dashboard
+                  </Link>
+                  
+                  <Link 
+                    href="/friends" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Users className="h-4 w-4 inline mr-2" />
+                    Friends
+                  </Link>
+                  
+                  <Link 
+                    href="/rooms" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <MessageSquare className="h-4 w-4 inline mr-2" />
+                    Rooms
+                  </Link>
+                  
+                  <Link 
+                    href="/videos" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Video className="h-4 w-4 inline mr-2" />
+                    Videos
+                  </Link>
+                  
+                  <Link 
+                    href="/leaderboards" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Trophy className="h-4 w-4 inline mr-2" />
+                    Leaderboards
+                  </Link>
+                  
+                  {(session.user.role === 'admin' || session.user.role === 'moderator') && (
+                    <Link 
+                      href="/moderation" 
+                      className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                      onClick={closeMobileMenu}
+                    >
+                      <Shield className="h-4 w-4 inline mr-2" />
+                      Moderation
+                    </Link>
+                  )}
+                  
+                  <Link 
+                    href="/rooms/create" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Plus className="h-4 w-4 inline mr-2" />
+                    Create Room
+                  </Link>
+                  
+                  <Link 
+                    href="/settings" 
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Settings className="h-4 w-4 inline mr-2" />
+                    Settings
+                  </Link>
+                  
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                  >
+                    <LogOut className="h-4 w-4 inline mr-2" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <div className="px-4 space-y-2">
+                  <Link href="/auth/signin" onClick={closeMobileMenu}>
+                    <Button variant="ghost" className="w-full">Sign In</Button>
+                  </Link>
+                  <Link href="/auth/signup" onClick={closeMobileMenu}>
+                    <Button className="w-full">Sign Up</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
