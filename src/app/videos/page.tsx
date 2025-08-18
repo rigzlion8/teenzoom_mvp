@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,8 +11,6 @@ import { VideoPlayer } from '@/components/ui/video-player'
 import { 
   Upload, 
   X, 
-  Search, 
-  Filter, 
   Heart, 
   RefreshCw,
   MessageSquare,
