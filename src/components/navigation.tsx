@@ -58,6 +58,9 @@ export default function Navigation() {
               <Link href="/friends" className="text-sm font-medium transition-colors hover:text-primary">
                 Friends
               </Link>
+              <Link href="/messages" className="text-sm font-medium transition-colors hover:text-primary">
+                Messages
+              </Link>
               <Link href="/rooms" className="text-sm font-medium transition-colors hover:text-primary">
                 Rooms
               </Link>
@@ -149,6 +152,14 @@ export default function Navigation() {
                   >
                     <Users className="h-4 w-4 inline mr-2" />
                     Friends
+                  </Link>
+                  <Link
+                    href="/messages"
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <MessageSquare className="h-4 w-4 inline mr-2" />
+                    Messages
                   </Link>
                   
                   <Link 

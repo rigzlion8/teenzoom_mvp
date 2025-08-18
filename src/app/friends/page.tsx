@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Search, UserPlus, Users, UserCheck, UserX, MessageCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { DirectMessage } from '@/components/direct-message'
 
 interface Friend {
   id: string
@@ -305,10 +306,11 @@ export default function FriendsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      Message
-                    </Button>
+                    <DirectMessage
+                      friendId={friend.id}
+                      friendName={friend.displayName || friend.username}
+                      friendUsername={friend.username}
+                    />
                     <Button
                       size="sm"
                       variant="outline"
