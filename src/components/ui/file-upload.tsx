@@ -15,7 +15,8 @@ interface FileUploadProps {
   disabled?: boolean
 }
 
-interface FileWithPreview extends File {
+interface FileWithPreview {
+  file: File // Store the original file object
   preview?: string
   uploadProgress?: number
   uploadStatus?: 'pending' | 'uploading' | 'success' | 'error'
@@ -104,7 +105,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       }
 
       const fileWithPreview: FileWithPreview = {
-        ...file,
+        file: file, // Store the original file object
         preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
         uploadStatus: 'pending'
       }
@@ -219,15 +220,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               {file.preview ? (
                 <img 
                   src={file.preview} 
-                  alt={`Preview of ${file.name}`}
+                  alt={`Preview of ${file.file.name}`}
                   className="w-12 h-12 object-cover rounded"
                 />
               ) : (
-                getFileIcon(file)
+                getFileIcon(file.file)
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                <p className="text-sm font-medium truncate">{file.file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(file.file.size)}</p>
               </div>
               <Button
                 variant="ghost"
