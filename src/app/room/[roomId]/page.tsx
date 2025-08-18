@@ -62,8 +62,8 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
   const [roomInfo] = useState<RoomInfo>({
-    name: roomId.charAt(0).toUpperCase() + roomId.slice(1),
-    description: `Welcome to the ${roomId} chat room!`,
+    name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
+    description: `Welcome to the ${roomId || 'chat'} room!`,
     memberCount: 0
   })
   

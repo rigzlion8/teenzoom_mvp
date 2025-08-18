@@ -192,6 +192,7 @@ export default function DashboardPage() {
               Join General Chat
             </Button>
             <Button 
+              onClick={() => router.push("/rooms/create")}
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3"
             >
@@ -199,6 +200,7 @@ export default function DashboardPage() {
               Create Room
             </Button>
             <Button 
+              onClick={() => router.push("/videos")}
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3"
             >
@@ -206,6 +208,7 @@ export default function DashboardPage() {
               Upload Video
             </Button>
             <Button 
+              onClick={() => router.push("/settings")}
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3"
             >
