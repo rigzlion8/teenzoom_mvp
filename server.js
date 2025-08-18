@@ -45,8 +45,8 @@ app.prepare().then(() => {
     // Join room
     socket.on('join_room', async (data) => {
       try {
-        const { roomId, userId } = data
-        console.log(`User ${userId} joining room ${roomId}`)
+        const { roomId, userId, username, displayName } = data
+        console.log(`User ${username || userId} joining room ${roomId}`)
         
         // Join the room
         socket.join(roomId)
@@ -54,10 +54,12 @@ app.prepare().then(() => {
         // Notify others in the room
         socket.to(roomId).emit('user_joined', {
           userId: userId,
+          username: username,
+          displayName: displayName,
           timestamp: new Date()
         })
         
-        console.log(`User ${userId} joined room ${roomId}`)
+        console.log(`User ${username || userId} joined room ${roomId}`)
       } catch (error) {
         console.error('Error joining room:', error)
       }
@@ -95,9 +97,9 @@ app.prepare().then(() => {
 
     // Leave room
     socket.on('leave_room', (data) => {
-      const { roomId } = data
+      const { roomId, username, displayName } = data
       socket.leave(roomId)
-      socket.to(roomId).emit('user_left', { userId: socket.id })
+      socket.to(roomId).emit('user_left', { userId: socket.id, username, displayName })
     })
 
     // Livestream events

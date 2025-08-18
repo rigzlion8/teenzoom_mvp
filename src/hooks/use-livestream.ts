@@ -5,7 +5,9 @@ import AgoraRTC, {
   IAgoraRTCClient, 
   IAgoraRTCRemoteUser, 
   ICameraVideoTrack, 
-  IMicrophoneAudioTrack
+  IMicrophoneAudioTrack,
+  IRemoteVideoTrack,
+  IRemoteAudioTrack
 } from 'agora-rtc-sdk-ng'
 
 export interface LivestreamState {
@@ -19,7 +21,13 @@ export interface LivestreamState {
     video: ICameraVideoTrack | null
     audio: IMicrophoneAudioTrack | null
   }
-  remoteUsers: IAgoraRTCRemoteUser[]
+  remoteUsers: RemoteUserEntry[]
+}
+
+type RemoteUserEntry = {
+  uid: string | number
+  videoTrack?: IRemoteVideoTrack
+  audioTrack?: IRemoteAudioTrack
 }
 
 export interface UseLivestreamReturn extends LivestreamState {
@@ -50,7 +58,7 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
   const [streamerId, setStreamerId] = useState<string | null>(null)
   const [streamerName, setStreamerName] = useState<string | null>(null)
   const [viewerCount, setViewerCount] = useState(0)
-  const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([])
+  const [remoteUsers, setRemoteUsers] = useState<RemoteUserEntry[]>([])
   
   // Refs
   const agoraClientRef = useRef<IAgoraRTCClient | null>(null)
@@ -65,10 +73,9 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
         setRemoteUsers(prev => {
           const existing = prev.find(u => u.uid === user.uid)
           if (existing) {
-            existing.videoTrack = user.videoTrack
-            return [...prev]
+            return prev.map(u => u.uid === user.uid ? { ...u, videoTrack: user.videoTrack || undefined } : u)
           }
-          return [...prev, user]
+          return [...prev, { uid: user.uid, videoTrack: user.videoTrack || undefined }]
         })
       }
       
@@ -76,10 +83,9 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
         setRemoteUsers(prev => {
           const existing = prev.find(u => u.uid === user.uid)
           if (existing) {
-            existing.audioTrack = user.audioTrack
-            return [...prev]
+            return prev.map(u => u.uid === user.uid ? { ...u, audioTrack: user.audioTrack || undefined } : u)
           }
-          return [...prev, user]
+          return [...prev, { uid: user.uid, audioTrack: user.audioTrack || undefined }]
         })
       }
     } catch (error) {
@@ -89,19 +95,18 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
 
   const handleUserUnpublished = useCallback((user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
     if (mediaType === 'video') {
-      setRemoteUsers(prev => prev.map(u => 
-        u.uid === user.uid ? { ...u, videoTrack: undefined } : u
-      ))
+      setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, videoTrack: undefined } : u))
     }
     if (mediaType === 'audio') {
-      setRemoteUsers(prev => prev.map(u => 
-        u.uid === user.uid ? { ...u, audioTrack: undefined } : u
-      ))
+      setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, audioTrack: undefined } : u))
     }
   }, [])
 
   const handleUserJoined = useCallback((user: IAgoraRTCRemoteUser) => {
-    setRemoteUsers(prev => [...prev, user])
+    setRemoteUsers(prev => {
+      const exists = prev.some(u => u.uid === user.uid)
+      return exists ? prev : [...prev, { uid: user.uid }]
+    })
   }, [])
 
   const handleUserLeft = useCallback((user: IAgoraRTCRemoteUser) => {

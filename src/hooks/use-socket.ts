@@ -150,13 +150,22 @@ export const useSocket = (roomId: string): UseSocketReturn => {
   // Join room when socket is connected and roomId changes
   useEffect(() => {
     if (socket && roomId) {
-      socket.emit('join_room', { roomId })
+      socket.emit('join_room', { 
+        roomId, 
+        userId: session?.user?.id,
+        username: session?.user?.username,
+        displayName: session?.user?.displayName
+      })
       
       return () => {
-        socket.emit('leave_room', { roomId })
+        socket.emit('leave_room', { 
+          roomId,
+          username: session?.user?.username,
+          displayName: session?.user?.displayName
+        })
       }
     }
-  }, [socket, roomId])
+  }, [socket, roomId, session?.user?.id, session?.user?.username, session?.user?.displayName])
 
   // Cleanup on unmount
   useEffect(() => {
