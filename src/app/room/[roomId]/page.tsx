@@ -22,6 +22,9 @@ import {
   X
 } from 'lucide-react'
 import { useSocket } from '@/hooks/use-socket'
+import { useLivestream } from '@/hooks/use-livestream'
+import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
+import { LivestreamControls } from '@/components/ui/livestream-controls'
 import { ChatMessage } from '@/lib/socket-server'
 
 interface RoomInfo {
@@ -79,6 +82,24 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
     startTyping,
     stopTyping
   } = useSocket(roomId)
+
+  // Use our Livestream hook
+  const {
+    isLive,
+    isStreaming,
+    isViewing,
+    streamerId,
+    streamerName,
+    viewerCount,
+    localTracks,
+    remoteUsers,
+    startStream,
+    stopStream,
+    joinStream,
+    leaveStream,
+    toggleVideo,
+    toggleAudio
+  } = useLivestream(roomId)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -244,6 +265,29 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
               <span className="text-xs sm:text-sm">{roomInfo.memberCount} online</span>
             </div>
             
+            {/* Stream Status */}
+            {isLive && (
+              <div className="hidden sm:flex items-center gap-1 sm:gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-xs sm:text-sm text-red-400 font-medium">LIVE</span>
+                {viewerCount > 0 && (
+                  <span className="text-xs text-gray-300">({viewerCount} watching)</span>
+                )}
+              </div>
+            )}
+            
+            {/* Start Stream Button */}
+            {!isStreaming && (
+              <Button
+                onClick={startStream}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-sm"
+                size="sm"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                Go Live
+              </Button>
+            )}
+            
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10">
               <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
@@ -253,6 +297,88 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
 
       {/* Chat Area - Fixed height container */}
       <div className="flex-1 flex flex-col min-h-0">
+        {/* Livestream Video Area */}
+        {(isStreaming || isLive) && (
+          <div className="p-3 sm:p-4 border-b border-white/20 bg-white/5">
+            <div className="mb-3">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                {isStreaming ? 'Your Stream' : `${streamerName}'s Stream`}
+              </h3>
+              
+              {/* Livestream Controls */}
+              <LivestreamControls
+                isStreaming={isStreaming}
+                isLive={isLive}
+                viewerCount={viewerCount}
+                onStartStream={startStream}
+                onStopStream={stopStream}
+                onToggleVideo={toggleVideo}
+                onToggleAudio={toggleAudio}
+              />
+            </div>
+
+            {/* Video Display */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Local Stream (if streaming) */}
+              {isStreaming && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Your Camera</h4>
+                  <LivestreamVideoPlayer
+                    videoTrack={localTracks.video}
+                    audioTrack={localTracks.audio}
+                    className="w-full h-48 lg:h-64 rounded-lg"
+                  />
+                </div>
+              )}
+
+              {/* Remote Streams (if viewing) */}
+              {remoteUsers.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Other Streamers</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {remoteUsers.map(user => (
+                      <LivestreamVideoPlayer
+                        key={user.uid}
+                        videoTrack={user.videoTrack}
+                        audioTrack={user.audioTrack}
+                        className="w-full h-32 rounded-lg"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Join Stream Button (if not streaming but stream is live) */}
+            {!isStreaming && isLive && !isViewing && (
+              <div className="mt-4 text-center">
+                <Button
+                  onClick={joinStream}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  size="sm"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Join Stream
+                </Button>
+              </div>
+            )}
+
+            {/* Leave Stream Button (if viewing) */}
+            {isViewing && (
+              <div className="mt-4 text-center">
+                <Button
+                  onClick={leaveStream}
+                  variant="outline"
+                  className="text-white border-white/30 hover:bg-white/10"
+                  size="sm"
+                >
+                  Leave Stream
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Messages - Scrollable area */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
           {messages.length === 0 ? (

@@ -1,9 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng'
+import { 
+  ICameraVideoTrack, 
+  IMicrophoneAudioTrack,
+  IRemoteVideoTrack,
+  IRemoteAudioTrack
+} from 'agora-rtc-sdk-ng'
 
 interface LivestreamVideoPlayerProps {
-  videoTrack?: ICameraVideoTrack | null
-  audioTrack?: IMicrophoneAudioTrack | null
+  videoTrack?: ICameraVideoTrack | IRemoteVideoTrack | null
+  audioTrack?: IMicrophoneAudioTrack | IRemoteAudioTrack | null
   className?: string
   style?: React.CSSProperties
 }
