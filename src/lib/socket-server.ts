@@ -28,12 +28,23 @@ let io: SocketIOServer | null = null
 export const initSocket = (port?: number) => {
   if (io) return io
 
-  // Use Railway's PORT environment variable or fallback to 3002 for development
-  const serverPort = port || parseInt(process.env.PORT || '3002', 10)
+  // Use a different port for Socket.IO to avoid conflicts
+  // If no specific port is provided, use a port offset from the main app
+  let serverPort: number
+  
+  if (port) {
+    serverPort = port
+  } else {
+    // Use main app port + 1, or fallback to 3001
+    const mainPort = parseInt(process.env.PORT || '3000', 10)
+    serverPort = mainPort + 1
+  }
+
+  console.log(`Initializing Socket.IO server on port ${serverPort}`)
 
   io = new SocketIOServer(serverPort, {
     cors: {
-      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3002",
+      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       methods: ["GET", "POST"]
     },
     addTrailingSlash: false

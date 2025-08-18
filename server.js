@@ -4,6 +4,7 @@ const next = require('next')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
+// Use port 3000 as default, Railway will override if needed
 const port = process.env.PORT || 3000
 
 // Prepare the Next.js app
@@ -33,5 +34,6 @@ app.prepare().then(() => {
       console.log(`> Ready on http://${hostname}:${port}`)
       console.log(`> Environment: ${process.env.NODE_ENV}`)
       console.log(`> Port: ${port}`)
+      console.log(`> Note: Socket.IO will use a different port`)
     })
 })

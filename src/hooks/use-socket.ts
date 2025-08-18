@@ -31,7 +31,9 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     // Initialize Socket.IO server first
     const initSocketServer = async () => {
       try {
-        await fetch('/api/socket/io')
+        const response = await fetch('/api/socket/io')
+        const data = await response.json()
+        console.log('Socket.IO server info:', data)
       } catch (error) {
         console.error('Failed to initialize Socket.IO server:', error)
       }
@@ -40,9 +42,12 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     initSocketServer()
 
     // Use the current window location for Socket.IO connection
+    // Socket.IO will run on a different port to avoid conflicts
     const socketUrl = typeof window !== 'undefined' 
-      ? `${window.location.protocol}//${window.location.host}`
-      : 'http://localhost:3002'
+      ? `${window.location.protocol}//${window.location.hostname}:${(parseInt(window.location.port || '3000', 10) + 1)}`
+      : 'http://localhost:3001'
+
+    console.log('Connecting to Socket.IO at:', socketUrl)
 
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
