@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { FileUpload } from '@/components/ui/file-upload'
 import { useToast } from '@/hooks/use-toast'
+import { useSocket } from '@/hooks/use-socket'
 import { 
   MessageSquare, 
   Send, 
@@ -34,6 +35,7 @@ interface Message {
   fileSize?: number
   fileType?: string
   createdAt: string
+  isRead?: boolean
   sender: {
     id: string
     username: string
@@ -49,6 +51,7 @@ interface Message {
 export function DirectMessage({ friendId, friendName, friendUsername, isOpen, onClose }: DirectMessageProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
+  const { socket, isConnected } = useSocket('direct-message')
   const [internalIsOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -122,6 +125,27 @@ export function DirectMessage({ friendId, friendName, friendUsername, isOpen, on
       markMessagesAsRead()
     }
   }, [isDialogOpen, loadMessages, markMessagesAsRead])
+
+  // Listen for read receipt updates
+  useEffect(() => {
+    if (!socket || !isConnected) return
+
+    const handleMessagesRead = (data: { readerId: string; messageIds: string[] }) => {
+      // Update the read status of messages sent by the current user
+      setMessages(prev => prev.map(message => {
+        if (message.senderId === session?.user?.id && data.messageIds.includes(message.id)) {
+          return { ...message, isRead: true }
+        }
+        return message
+      }))
+    }
+
+    socket.on('messages_read_by_recipient', handleMessagesRead)
+
+    return () => {
+      socket.off('messages_read_by_recipient', handleMessagesRead)
+    }
+  }, [socket, isConnected, session?.user?.id])
 
   const sendMessage = async (content: string, messageType: 'text' | 'image' | 'video' | 'audio' | 'file' = 'text', fileData?: {
     url: string
@@ -358,11 +382,18 @@ export function DirectMessage({ friendId, friendName, friendUsername, isOpen, on
                     } p-2 sm:p-3`}
                   >
                     {renderMessageContent(message)}
-                    <p className={`text-xs mt-1 ${
-                      message.senderId === session?.user?.id ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
-                      {formatTime(message.createdAt)}
-                    </p>
+                    <div className={`flex items-center justify-between mt-1`}>
+                      <p className={`text-xs ${
+                        message.senderId === session?.user?.id ? 'text-blue-100' : 'text-gray-500'
+                      }`}>
+                        {formatTime(message.createdAt)}
+                      </p>
+                      {message.senderId === session?.user?.id && (
+                        <span className="text-[10px] ml-2 text-blue-100">
+                          {message.isRead ? 'Read' : 'Sent'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   {message.senderId === session?.user?.id && (

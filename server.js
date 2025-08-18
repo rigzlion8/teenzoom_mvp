@@ -41,25 +41,40 @@ app.prepare().then(() => {
   // Socket.IO connection handling
   io.on('connection', (socket) => {
     console.log('Socket.IO client connected:', socket.id)
-    
+
+    // Store user info on socket for later use
+    socket.userId = null
+    socket.username = null
+    socket.displayName = null
+
+    // User identification event
+    socket.on('user_identify', (data) => {
+      const { userId, username, displayName } = data
+      socket.userId = userId
+      socket.username = username
+      socket.displayName = displayName
+      console.log(`User ${username || userId} identified on socket ${socket.id}`)
+    })
+
     // Join room
     socket.on('join_room', async (data) => {
       try {
         const { roomId, userId, username, displayName } = data
-        console.log(`User ${username || userId} joining room ${roomId}`)
+        console.log(`User ${userId} joining room ${roomId}`)
         
-        // Join the room
+        // Store user info on socket
+        socket.userId = userId
+        socket.username = username
+        socket.displayName = displayName
+        
         socket.join(roomId)
-        
-        // Notify others in the room
         socket.to(roomId).emit('user_joined', {
           userId: userId,
           username: username,
           displayName: displayName,
           timestamp: new Date()
         })
-        
-        console.log(`User ${username || userId} joined room ${roomId}`)
+        console.log(`User ${userId} joined room ${roomId}`)
       } catch (error) {
         console.error('Error joining room:', error)
       }
@@ -158,6 +173,24 @@ app.prepare().then(() => {
       const { streamId, userId } = data
       console.log(`Viewer ${userId} left personal livestream ${streamId}`)
       socket.broadcast.emit('personal_viewer_left', data)
+    })
+
+    // Message read events
+    socket.on('messages_read', (data) => {
+      const { readerId, senderId, messageIds } = data
+      console.log(`User ${readerId} read messages from ${senderId}`)
+      
+      // Find the sender's socket and emit to them specifically
+      const senderSocket = Array.from(io.sockets.sockets.values()).find(s => 
+        s.userId === senderId
+      )
+      
+      if (senderSocket) {
+        senderSocket.emit('messages_read_by_recipient', {
+          readerId,
+          messageIds
+        })
+      }
     })
     
     socket.on('disconnect', () => {

@@ -39,20 +39,23 @@ export async function GET(request: NextRequest) {
           { senderId: friendId, receiverId: session.user.id }
         ]
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        senderId: true,
+        receiverId: true,
+        messageType: true,
+        fileUrl: true,
+        fileName: true,
+        fileSize: true,
+        fileType: true,
+        createdAt: true,
+        isRead: true,
         sender: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true
-          }
+          select: { id: true, username: true, displayName: true }
         },
         receiver: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true
-          }
+          select: { id: true, username: true, displayName: true }
         }
       },
       orderBy: {

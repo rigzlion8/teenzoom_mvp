@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getIO } from '@/lib/socket-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Friendship not found or not accepted' }, { status: 403 })
     }
 
+    // Get the unread messages before marking them as read
+    const unreadMessages = await prisma.directMessage.findMany({
+      where: {
+        senderId: friendId,
+        receiverId: session.user.id,
+        isRead: false
+      },
+      select: {
+        id: true,
+        senderId: true
+      }
+    })
+
     // Mark all unread messages from this friend as read
     await prisma.directMessage.updateMany({
       where: {
@@ -41,6 +55,21 @@ export async function POST(request: NextRequest) {
         isRead: true
       }
     })
+
+    // Emit Socket.IO event to notify the sender that their messages were read
+    if (unreadMessages.length > 0) {
+      const messageIds = unreadMessages.map(msg => msg.id)
+      
+      // Get the socket instance and emit the event
+      const socketServer = getIO()
+      if (socketServer) {
+        socketServer.emit('messages_read', {
+          readerId: session.user.id,
+          senderId: friendId,
+          messageIds
+        })
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

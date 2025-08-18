@@ -62,6 +62,15 @@ export const useSocket = (roomId: string): UseSocketReturn => {
     newSocket.on('connect', () => {
       console.log('Socket connected:', newSocket.id)
       setIsConnected(true)
+      
+      // Identify the user to the server
+      if (session?.user) {
+        newSocket.emit('user_identify', {
+          userId: session.user.id,
+          username: session.user.username,
+          displayName: session.user.displayName
+        })
+      }
     })
 
     newSocket.on('disconnect', () => {
