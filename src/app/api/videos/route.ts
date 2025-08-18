@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       id: video.id,
       title: video.title,
       description: video.description || '',
-      thumbnailUrl: video.thumbnailUrl || '/placeholder-video.jpg',
+      thumbnailUrl: video.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0xNjAgOTBDMTYwIDg5LjQ0NzcgMTU5LjU1MiA4OSAxNTkgODlDMTU4LjQ0OCA4OSAxNTggODkuNDQ3NyAxNTggOTBDMTU4IDkwLjU1MjMgMTU4LjQ0OCA5MSAxNTkgOTFDMTU5LjU1MiA5MSAxNjAgOTAuNTUyMyAxNjAgOTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K', // SVG placeholder instead of missing image
       videoUrl: video.videoUrl,
       duration: video.duration || 0,
       views: Math.floor(Math.random() * 1000), // Mock data for now
