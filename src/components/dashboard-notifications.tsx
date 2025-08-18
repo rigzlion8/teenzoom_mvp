@@ -5,8 +5,9 @@ import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Bell, Check, CheckCheck, Users, Video, MessageSquare, Gift } from 'lucide-react'
+import { Bell, Check, CheckCheck, Users, Video, MessageSquare, Gift, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import Link from 'next/link'
 
 interface Notification {
   id: string
@@ -158,22 +159,24 @@ export function DashboardNotifications() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            <CardTitle>Recent Activity</CardTitle>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {unreadCount} new
+              <Badge variant="destructive" className="bg-red-500">
+                {unreadCount}
               </Badge>
             )}
-          </div>
-          {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markAllAsRead}>
-              <CheckCheck className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
               Mark all read
             </Button>
-          )}
+            <Button asChild variant="outline" size="sm">
+              <Link href="/notifications" className="flex items-center gap-2">
+                View All
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
         <CardDescription>
           Stay updated with your latest activities and notifications

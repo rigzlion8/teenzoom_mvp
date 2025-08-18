@@ -15,7 +15,8 @@ import {
   Plus,
   User,
   Settings,
-  LogOut
+  LogOut,
+  Bell
 } from 'lucide-react'
 
 export default function Navigation() {
@@ -60,6 +61,9 @@ export default function Navigation() {
               </Link>
               <Link href="/messages" className="text-sm font-medium transition-colors hover:text-primary">
                 Messages
+              </Link>
+              <Link href="/notifications" className="text-sm font-medium transition-colors hover:text-primary">
+                Notifications
               </Link>
               <Link href="/rooms" className="text-sm font-medium transition-colors hover:text-primary">
                 Rooms
@@ -160,6 +164,14 @@ export default function Navigation() {
                   >
                     <MessageSquare className="h-4 w-4 inline mr-2" />
                     Messages
+                  </Link>
+                  <Link
+                    href="/notifications"
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    onClick={closeMobileMenu}
+                  >
+                    <Bell className="h-4 w-4 inline mr-2" />
+                    Notifications
                   </Link>
                   
                   <Link 
