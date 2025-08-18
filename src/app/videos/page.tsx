@@ -16,30 +16,30 @@ import {
   Filter, 
   Heart, 
   RefreshCw,
-  MessageSquare
+  MessageSquare,
+  Users,
+  Video
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 
 interface VideoItem {
   id: string
   title: string
-  description: string
-  thumbnailUrl: string
+  description?: string
   videoUrl: string
-  duration: number
-  views: number
-  likes: number
-  comments: number
+  thumbnailUrl: string
+  duration?: number
+  privacy: 'public' | 'private' | 'friends_only'
+  createdAt: string
+  updatedAt: string
   author: {
     id: string
     username: string
     displayName: string
-    avatar?: string
   }
-  tags: string[]
-  category: string
-  createdAt: string
-  isLiked?: boolean
+  isOwner: boolean
 }
 
 const videoCategories = [
@@ -54,31 +54,39 @@ const videoCategories = [
 export default function VideosPage() {
   const { data: session } = useSession()
   const { toast } = useToast()
-  const [videos, setVideos] = useState<VideoItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState('trending')
+  const [selectedFilter, setSelectedFilter] = useState('all')
+  const [videos, setVideos] = useState<VideoItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showUpload, setShowUpload] = useState(false)
   const [videoCaption, setVideoCaption] = useState('')
+  const [videoPrivacy, setVideoPrivacy] = useState('public')
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [lastUploadFile, setLastUploadFile] = useState<File | null>(null)
 
   const fetchVideos = async () => {
     try {
-      const response = await fetch(`/api/videos?category=${selectedCategory}`)
+      setIsLoading(true)
+      const response = await fetch(`/api/videos?filter=${selectedFilter}`)
       if (response.ok) {
         const data = await response.json()
         setVideos(data.videos)
+      } else {
+        throw new Error('Failed to fetch videos')
       }
     } catch (error) {
       console.error('Error fetching videos:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   useEffect(() => {
     fetchVideos()
-  }, [selectedCategory, videos.length === 0]) // Only fetch when category changes or when there are no videos
+  }, [selectedFilter, videos.length === 0]) // Only fetch when filter changes or when there are no videos
 
   const handleVideoUpload = async (file: File) => {
     console.log('handleVideoUpload called with file:', file)
@@ -124,12 +132,14 @@ export default function VideosPage() {
       formData.append('title', videoCaption.trim() || `Video ${Date.now()}`)
       formData.append('description', videoCaption.trim() || 'Uploaded video')
       formData.append('category', selectedCategory)
+      formData.append('privacy', videoPrivacy)
 
       console.log('FormData created:', {
         video: file.name,
         title: videoCaption.trim() || `Video ${Date.now()}`,
         description: videoCaption.trim() || 'Uploaded video',
-        category: selectedCategory
+        category: selectedCategory,
+        privacy: videoPrivacy
       })
 
       // Check if we're in production and need to use a different base URL
@@ -163,6 +173,7 @@ export default function VideosPage() {
           setUploading(false)
           setUploadProgress(0)
           setVideoCaption('') // Reset caption
+          setVideoPrivacy('public') // Reset privacy
           setUploadError(null) // Clear any previous errors
           setLastUploadFile(null) // Clear stored file
           fetchVideos()
@@ -201,22 +212,9 @@ export default function VideosPage() {
     }
   }
 
-  const handleLike = async (videoId: string) => {
-    try {
-      const response = await fetch(`/api/videos/${videoId}/like`, {
-        method: 'POST'
-      })
-      
-      if (response.ok) {
-        setVideos(prev => prev.map(video => 
-          video.id === videoId 
-            ? { ...video, isLiked: !video.isLiked, likes: video.isLiked ? video.likes - 1 : video.likes + 1 }
-            : video
-        ))
-      }
-    } catch (error) {
-      console.error('Error liking video:', error)
-    }
+  const handleLike = (videoId: string) => {
+    // TODO: Implement like functionality
+    console.log('Like video:', videoId)
   }
 
   const regenerateThumbnail = async (videoId: string) => {
@@ -290,16 +288,52 @@ export default function VideosPage() {
                     <Textarea
                       id="video-caption"
                       placeholder="Write a compelling caption for your video... (optional)"
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
-                      rows={3}
-                      maxLength={280}
                       value={videoCaption}
                       onChange={(e) => setVideoCaption(e.target.value)}
+                      className="min-h-[100px] resize-none"
+                      maxLength={500}
                     />
-                    <div className="absolute bottom-2 right-2 text-xs text-gray-400">
-                      {videoCaption.length}/280
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                      {videoCaption.length}/500
                     </div>
                   </div>
+                </div>
+
+                {/* Privacy Settings */}
+                <div className="space-y-2">
+                  <Label htmlFor="video-privacy" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Privacy Settings
+                  </Label>
+                  <Select value={videoPrivacy} onValueChange={setVideoPrivacy}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose privacy level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          Public - Anyone can view
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="friends_only">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          Friends Only - Only your friends can view
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          Private - Only you can view
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    {videoPrivacy === 'public' && 'Your video will be visible to everyone on TeenZoom'}
+                    {videoPrivacy === 'friends_only' && 'Only your accepted friends can see this video'}
+                    {videoPrivacy === 'private' && 'This video is only visible to you'}
+                  </p>
                 </div>
                 
                 {uploadError && (
@@ -334,6 +368,7 @@ export default function VideosPage() {
                     onClick={() => {
                       setShowUpload(false)
                       setVideoCaption('') // Reset caption when closing
+                      setVideoPrivacy('public') // Reset privacy when closing
                       setUploadError(null) // Clear any errors
                       setLastUploadFile(null) // Clear stored file
                     }} 
@@ -377,6 +412,36 @@ export default function VideosPage() {
         </div>
       </div>
 
+      {/* Filter Options */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={selectedFilter === 'all' ? 'default' : 'outline'}
+            onClick={() => setSelectedFilter('all')}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4" />
+            All Videos
+          </Button>
+          <Button
+            variant={selectedFilter === 'my-videos' ? 'default' : 'outline'}
+            onClick={() => setSelectedFilter('my-videos')}
+            className="flex items-center gap-2"
+          >
+            <Video className="h-4 w-4" />
+            My Videos
+          </Button>
+          <Button
+            variant={selectedFilter === 'friends' ? 'default' : 'outline'}
+            onClick={() => setSelectedFilter('friends')}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4" />
+            Friends&apos; Videos
+          </Button>
+        </div>
+      </div>
+
       {/* Video Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
@@ -394,6 +459,27 @@ export default function VideosPage() {
             
             {/* Video Info */}
             <div className="p-4">
+              {/* Privacy Badge */}
+              <div className="flex items-center justify-between mb-2">
+                <Badge 
+                  variant={
+                    video.privacy === 'public' ? 'default' :
+                    video.privacy === 'friends_only' ? 'secondary' :
+                    'destructive'
+                  }
+                  className="text-xs"
+                >
+                  {video.privacy === 'public' && '🌍 Public'}
+                  {video.privacy === 'friends_only' && '👥 Friends Only'}
+                  {video.privacy === 'private' && '🔒 Private'}
+                </Badge>
+                {video.isOwner && (
+                  <Badge variant="outline" className="text-xs">
+                    👤 Yours
+                  </Badge>
+                )}
+              </div>
+
               {video.description && video.description !== video.title && (
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                   {video.description}
@@ -408,7 +494,7 @@ export default function VideosPage() {
               {/* Action Buttons */}
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleLike(video.id)} className="flex items-center gap-1">
                     <Heart className="h-4 w-4" />
                     <span className="ml-1">Like</span>
                   </Button>
@@ -418,7 +504,7 @@ export default function VideosPage() {
                   </Button>
                 </div>
                 
-                {session?.user?.id === video.author.id && (
+                {video.isOwner && (
                   <Button onClick={() => regenerateThumbnail(video.id)}>
                     <RefreshCw className="h-3 w-3" />
                   </Button>

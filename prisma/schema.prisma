@@ -119,6 +119,7 @@ model RoomVideo {
   duration  Int?
   roomId    String   @db.ObjectId
   uploadedBy String  @db.ObjectId
+  privacy   VideoPrivacy @default(public)
   isForwarded Boolean @default(false)
   originalVideoId String?
   createdAt DateTime @default(now())
@@ -288,4 +289,10 @@ enum TargetType {
   message
   room
   video
+}
+
+enum VideoPrivacy {
+  public
+  private
+  friends_only
 }

@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const video = formData.get('video') as FileLike
     const title = formData.get('title') as string
     const description = formData.get('description') as string
+    const privacy = formData.get('privacy') as string || 'public'
 
     if (!video) {
       return NextResponse.json({ error: 'Video file is required' }, { status: 400 })
@@ -38,12 +39,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Video title is required' }, { status: 400 })
     }
 
+    // Validate privacy setting
+    if (!['public', 'private', 'friends_only'].includes(privacy)) {
+      return NextResponse.json({ error: 'Invalid privacy setting' }, { status: 400 })
+    }
+
     console.log('Processing video upload:', {
       name: video.name,
       type: video.type,
       size: video.size,
       title,
-      description
+      description,
+      privacy
     })
 
     // Convert File to Buffer
@@ -91,7 +98,8 @@ export async function POST(request: NextRequest) {
         thumbnailUrl: uploadResult.thumbnail_url || null,
         duration: Math.round((uploadResult.duration || 0)),
         roomId: room.id,
-        uploadedBy: session.user.id
+        uploadedBy: session.user.id,
+        privacy: privacy as 'public' | 'private' | 'friends_only'
       }
     })
 
