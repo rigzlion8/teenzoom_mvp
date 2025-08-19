@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Check if the video exists
     const video = await prisma.roomVideo.findUnique({
       where: { id: videoId },
-      include: { author: { select: { id: true, displayName: true } } }
+      include: { uploader: { select: { id: true, displayName: true } } }
     })
 
     if (!video) {
@@ -61,7 +61,9 @@ export async function POST(request: NextRequest) {
         roomId: targetRoomId,
         uploadedBy: session.user.id,
         isForwarded: true,
-        originalVideoId: videoId
+        privacy: 'public',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

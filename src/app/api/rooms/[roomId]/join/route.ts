@@ -53,7 +53,11 @@ export async function POST(
       data: {
         userId: session.user.id,
         roomId: roomId,
-        role: 'member'
+        role: 'member',
+        isActive: true,
+        joinedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

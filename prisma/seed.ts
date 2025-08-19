@@ -69,7 +69,9 @@ async function main() {
       roomId: generalRoom.id,
       role: 'admin',
       isActive: true,
-      joinedAt: new Date()
+      joinedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
 

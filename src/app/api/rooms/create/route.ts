@@ -66,7 +66,11 @@ export async function POST(request: NextRequest) {
         allowFileSharing: allowFileSharing ?? true,
         requireApproval: requireApproval ?? false,
         tags: tags || [],
-        ownerId: session.user.id
+        ownerId: session.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isActive: true,
+        lastActivity: new Date()
       }
     })
 
@@ -77,7 +81,11 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         roomId: room.id,
-        role: 'admin'
+        role: 'admin',
+        isActive: true,
+        joinedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

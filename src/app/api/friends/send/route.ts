@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         friendId: userId,
-        status: 'pending'
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

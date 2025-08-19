@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search } }
+        { description: { contains: search, mode: 'insensitive' } }
+        // Note: JSON tag search removed as 'has' is not supported for JSON fields
       ]
     }
 

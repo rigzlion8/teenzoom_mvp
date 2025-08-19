@@ -72,7 +72,10 @@ export async function POST(request: NextRequest) {
         description: description || '',
         privacy,
         isLive: true,
-        startedAt: new Date()
+        startedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        viewerCount: BigInt(0)
       },
       include: {
         streamer: {

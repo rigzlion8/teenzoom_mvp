@@ -107,7 +107,10 @@ export async function POST(request: NextRequest) {
         fileUrl: fileUrl || null,
         fileName: fileName || null,
         fileSize: fileSize || null,
-        fileType: fileType || null
+        fileType: fileType || null,
+        isRead: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         sender: {

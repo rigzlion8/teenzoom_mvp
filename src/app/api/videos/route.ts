@@ -73,11 +73,11 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get videos with author information
+    // Get videos with uploader information
     const videos = await prisma.roomVideo.findMany({
       where,
       include: {
-        author: {
+        uploader: {
           select: {
             id: true,
             username: true,
@@ -102,9 +102,9 @@ export async function GET(request: NextRequest) {
       createdAt: video.createdAt,
       updatedAt: video.updatedAt,
       author: {
-        id: video.author.id,
-        username: video.author.username,
-        displayName: video.author.displayName
+        id: video.uploader.id,
+        username: video.uploader.username,
+        displayName: video.uploader.displayName
       },
       isOwner: video.uploadedBy === session.user.id
     }))

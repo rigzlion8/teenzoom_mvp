@@ -88,10 +88,10 @@ export const authOptions: NextAuthOptions = {
             email: user.email || undefined,
             displayName: user.displayName,
             role: user.role,
-            coins: user.coins,
+            coins: Number(user.coins),
             vipLifetime: user.vipLifetime,
-            xp: user.xp,
-            level: user.level
+            xp: Number(user.xp),
+            level: Number(user.level)
           }
         } catch (error) {
           console.error("Auth error:", error)

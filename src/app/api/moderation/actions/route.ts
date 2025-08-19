@@ -75,7 +75,9 @@ export async function POST(request: NextRequest) {
         details: {
           duration,
           timestamp: new Date().toISOString()
-        }
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

@@ -126,7 +126,9 @@ export const initSocket = (port?: number) => {
             content,
             userId: userData.userId,
             roomId,
-            messageType: messageType as 'text' | 'image' | 'video' | 'audio' | 'file'
+            messageType: messageType as 'text' | 'image' | 'video' | 'audio' | 'file',
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         })
 
@@ -141,7 +143,7 @@ export const initSocket = (port?: number) => {
           messageType: message.messageType as 'text' | 'image' | 'video' | 'audio' | 'file',
           fileUrl: message.fileUrl || undefined,
           fileName: message.fileName || undefined,
-          fileSize: message.fileSize || undefined,
+          fileSize: message.fileSize ? Number(message.fileSize) : undefined,
           createdAt: message.createdAt
         }
 

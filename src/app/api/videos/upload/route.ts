@@ -99,7 +99,10 @@ export async function POST(request: NextRequest) {
         duration: Math.round((uploadResult.duration || 0)),
         roomId: room.id,
         uploadedBy: session.user.id,
-        privacy: privacy as 'public' | 'private' | 'friends_only'
+        privacy: privacy as 'public' | 'private' | 'friends_only',
+        isForwarded: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

@@ -89,15 +89,10 @@ export async function GET(request: NextRequest) {
         currency: 'KES',
         paymentType: plan === 'wallet_topup' ? 'wallet_topup' : 'vip_purchase',
         status: 'successful',
+        userId: userId,
         paystackRef: data.reference,
-        senderId: userId,
-        receiverId: userId, // Self-payment
-        description: plan === 'wallet_topup' ? 'Wallet top-up' : `${plan} plan purchase`,
-        metadata: {
-          plan,
-          type: paymentType,
-          gateway: 'paystack'
-        }
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
