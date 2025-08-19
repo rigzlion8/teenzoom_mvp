@@ -74,6 +74,7 @@ export interface UsePersonalLivestreamReturn extends PersonalLivestreamState {
   toggleVideo: () => Promise<void>
   toggleAudio: () => Promise<void>
   setVideoQuality: (quality: 'low' | 'medium' | 'high') => void
+  connectionStatus: 'idle' | 'connecting' | 'connected' | 'failed'
 }
 
 type RemoteUserEntry = {
@@ -104,6 +105,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
   const [privacy, setPrivacy] = useState<'public' | 'friends-only' | null>(null)
   const [viewerCount, setViewerCount] = useState(0)
   const [remoteUsers, setRemoteUsers] = useState<RemoteUserEntry[]>([])
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle')
   
   // Refs
   const agoraClientRef = useRef<IAgoraRTCClient | null>(null)
@@ -218,6 +220,11 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       return
     }
 
+    // Add connection timeout and retry logic
+    const connectionTimeout = 15000 // 15 seconds
+    const maxRetries = 3
+    let retryCount = 0
+
     try {
       // Dynamic import to avoid SSR issues
       const AgoraRTC = await import('agora-rtc-sdk-ng') as unknown as AgoraRTCModule
@@ -279,13 +286,43 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
       const { token } = await tokenResponse.json()
 
-      // Join channel
-      await agoraClientRef.current.join(
-        process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        channelName,
-        token,
-        agoraUid
-      )
+      // Join channel with retry logic
+      const joinChannel = async (): Promise<void> => {
+        try {
+          await Promise.race([
+            agoraClientRef.current!.join(
+              process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+              channelName,
+              token,
+              agoraUid
+            ),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Connection timeout')), connectionTimeout)
+            )
+          ])
+        } catch (error) {
+          console.error(`Join channel attempt ${retryCount + 1} failed:`, error)
+          throw error
+        }
+      }
+
+      // Retry joining the channel
+      setConnectionStatus('connecting')
+      while (retryCount < maxRetries) {
+        try {
+          await joinChannel()
+          setConnectionStatus('connected')
+          break // Success, exit retry loop
+        } catch (error) {
+          retryCount++
+          if (retryCount >= maxRetries) {
+            setConnectionStatus('failed')
+            throw new Error(`Failed to join channel after ${maxRetries} attempts: ${error}`)
+          }
+          console.log(`Retrying connection... (${retryCount}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)) // Exponential backoff
+        }
+      }
 
       // Publish tracks
       await agoraClientRef.current.publish([audioTrack, videoTrack])
@@ -424,13 +461,42 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
       const { token } = await response.json()
 
-      // Join channel as audience
-      await agoraClientRef.current.join(
-        process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        actualChannelName,
-        token,
-        agoraUid
-      )
+      // Join channel as audience with retry logic
+      const joinChannel = async (): Promise<void> => {
+        try {
+          await Promise.race([
+            agoraClientRef.current!.join(
+              process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+              actualChannelName,
+              token,
+              agoraUid
+            ),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Connection timeout')), 15000)
+            )
+          ])
+        } catch (error) {
+          console.error('Join channel as audience failed:', error)
+          throw error
+        }
+      }
+
+      // Retry joining the channel
+      let retryCount = 0
+      const maxRetries = 3
+      while (retryCount < maxRetries) {
+        try {
+          await joinChannel()
+          break // Success, exit retry loop
+        } catch (error) {
+          retryCount++
+          if (retryCount >= maxRetries) {
+            throw new Error(`Failed to join channel after ${maxRetries} attempts: ${error}`)
+          }
+          console.log(`Retrying connection... (${retryCount}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)) // Exponential backoff
+        }
+      }
 
       setIsViewing(true)
 
@@ -509,6 +575,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
     viewerCount,
     localTracks,
     remoteUsers,
+    connectionStatus,
     startStream,
     stopStream,
     joinStream,

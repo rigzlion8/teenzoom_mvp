@@ -53,7 +53,8 @@ export default function DashboardPage() {
     isViewing: hookIsViewing,
     title: streamTitle,
     privacy: streamPrivacy,
-    viewerCount: streamViewerCount
+    viewerCount: streamViewerCount,
+    connectionStatus
   } = usePersonalLivestream()
 
   const checkCurrentStream = useCallback(async () => {
@@ -216,6 +217,18 @@ export default function DashboardPage() {
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                           LIVE
                         </span>
+                        {connectionStatus === 'connecting' && (
+                          <span className="flex items-center gap-1 text-yellow-400">
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                            CONNECTING...
+                          </span>
+                        )}
+                        {connectionStatus === 'failed' && (
+                          <span className="flex items-center gap-1 text-red-400">
+                            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                            CONNECTION FAILED
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
                           {currentStream.viewerCount} watching
@@ -313,11 +326,26 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <GoLiveDialog>
               <Button 
-                className="bg-green-600 hover:bg-green-700 text-sm sm:text-base py-2 sm:py-3 w-full"
-                disabled={hookIsStreaming}
+                className={`text-sm sm:text-base py-2 sm:py-3 w-full ${
+                  hookIsStreaming 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : connectionStatus === 'connecting'
+                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                    : connectionStatus === 'failed'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+                disabled={hookIsStreaming || connectionStatus === 'connecting'}
               >
                 <Video className="w-4 h-4 mr-2" />
-                {hookIsStreaming ? 'Already Live' : 'Go Live'}
+                {hookIsStreaming 
+                  ? 'Already Live' 
+                  : connectionStatus === 'connecting'
+                  ? 'Connecting...'
+                  : connectionStatus === 'failed'
+                  ? 'Connection Failed'
+                  : 'Go Live'
+                }
               </Button>
             </GoLiveDialog>
             <Button 

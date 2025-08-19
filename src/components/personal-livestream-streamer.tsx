@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Video, Users, X, Mic, MicOff, VideoOff } from 'lucide-react'
+import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw } from 'lucide-react'
 import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
 import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
 
@@ -19,6 +19,7 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
     privacy,
     viewerCount,
     localTracks,
+    connectionStatus,
     stopStream,
     toggleVideo,
     toggleAudio
@@ -52,6 +53,18 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
                   YOU&apos;RE LIVE
                 </Badge>
+                {connectionStatus === 'connecting' && (
+                  <Badge variant="outline" className="text-yellow-400 border-yellow-400 text-xs">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse mr-1"></div>
+                    CONNECTING...
+                  </Badge>
+                )}
+                {connectionStatus === 'failed' && (
+                  <Badge variant="destructive" className="text-xs">
+                    <div className="w-2 h-2 bg-red-400 rounded-full mr-1"></div>
+                    CONNECTION FAILED
+                  </Badge>
+                )}
                 <span className="text-sm text-gray-300">
                   {privacy === 'friends-only' ? 'Friends Only' : 'Public'}
                 </span>
@@ -64,15 +77,28 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
               <Users className="h-4 w-4" />
               <span>{viewerCount} watching</span>
             </div>
-            <Button
-              onClick={handleStopStream}
-              variant="destructive"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700"
-            >
-              <X className="h-4 w-4 mr-2" />
-              End Stream
-            </Button>
+                              <div className="flex gap-2">
+                    {connectionStatus === 'failed' && (
+                      <Button
+                        onClick={() => window.location.reload()}
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-white"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Retry Connection
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleStopStream}
+                      variant="destructive"
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      End Stream
+                    </Button>
+                  </div>
           </div>
         </CardHeader>
         

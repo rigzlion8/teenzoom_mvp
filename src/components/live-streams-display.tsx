@@ -37,7 +37,8 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
     joinStream,
     leaveStream,
     isViewing,
-    streamerId: currentStreamerId
+    streamerId: currentStreamerId,
+    connectionStatus
   } = usePersonalLivestream()
 
   const loadLiveStreams = useCallback(async () => {
@@ -237,10 +238,17 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
                     <Button
                       onClick={() => handleJoinStream(stream)}
                       size="sm"
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      disabled={connectionStatus === 'connecting'}
+                      className={`${
+                        connectionStatus === 'connecting'
+                          ? 'bg-yellow-600 hover:bg-yellow-700'
+                          : connectionStatus === 'failed'
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-red-600 hover:bg-red-700'
+                      } text-white`}
                     >
                       <Video className="h-4 w-4 mr-2" />
-                      Join Stream
+                      {connectionStatus === 'connecting' ? 'Connecting...' : 'Join Stream'}
                     </Button>
                   )}
                 </div>
