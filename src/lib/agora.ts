@@ -43,7 +43,28 @@ export const generateRTCToken = (
   const config = getAgoraConfig()
   
   // Convert uid to number if it's a string
-  const numericUid = typeof uid === 'string' ? parseInt(uid, 10) : uid
+  let numericUid: number
+  if (typeof uid === 'string') {
+    // If it's a MongoDB ObjectID, convert it to a numeric hash
+    if (uid.length === 24 && /^[0-9a-fA-F]{24}$/.test(uid)) {
+      // Simple hash function for ObjectID to number
+      let hash = 0
+      for (let i = 0; i < uid.length; i++) {
+        const char = uid.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // Convert to 32-bit integer
+      }
+      numericUid = Math.abs(hash)
+    } else {
+      // Try to parse as regular number
+      numericUid = parseInt(uid, 10)
+      if (isNaN(numericUid)) {
+        throw new Error(`Invalid UID format: ${uid}`)
+      }
+    }
+  } else {
+    numericUid = uid
+  }
   
   return RtcTokenBuilder.buildTokenWithUid(
     config.appId,

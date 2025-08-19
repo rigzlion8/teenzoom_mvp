@@ -248,6 +248,19 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Generate deterministic channel name (same for streamer and viewers)
       const channelName = `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`
       
+      // Generate consistent UID for Agora (hash of MongoDB ObjectID)
+      const generateUid = (objectId: string): number => {
+        let hash = 0
+        for (let i = 0; i < objectId.length; i++) {
+          const char = objectId.charCodeAt(i)
+          hash = ((hash << 5) - hash) + char
+          hash = hash & hash // Convert to 32-bit integer
+        }
+        return Math.abs(hash)
+      }
+      
+      const agoraUid = generateUid(session.user.id)
+      
       // Get token from API
       const tokenResponse = await fetch('/api/livestream/token', {
         method: 'POST',
@@ -255,7 +268,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         body: JSON.stringify({
           channelName: channelName,
           role: 'host',
-          uid: session.user.id
+          uid: agoraUid
         })
       })
 
@@ -270,7 +283,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
         channelName,
         token,
-        session.user.id
+        agoraUid
       )
 
       // Publish tracks
@@ -358,6 +371,19 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Generate deterministic channel name (same format as streamer)
       const actualChannelName = `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`
       
+      // Generate consistent UID for Agora (hash of MongoDB ObjectID)
+      const generateUid = (objectId: string): number => {
+        let hash = 0
+        for (let i = 0; i < objectId.length; i++) {
+          const char = objectId.charCodeAt(i)
+          hash = ((hash << 5) - hash) + char
+          hash = hash & hash // Convert to 32-bit integer
+        }
+        return Math.abs(hash)
+      }
+      
+      const agoraUid = generateUid(session.user.id)
+      
       // Get token from API
       const response = await fetch('/api/livestream/token', {
         method: 'POST',
@@ -365,7 +391,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         body: JSON.stringify({
           channelName: actualChannelName,
           role: 'audience',
-          uid: session.user.id
+          uid: agoraUid
         })
       })
 
@@ -380,7 +406,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
         actualChannelName,
         token,
-        session.user.id
+        agoraUid
       )
 
       setIsViewing(true)
