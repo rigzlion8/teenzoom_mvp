@@ -35,18 +35,21 @@ export const getAgoraConfig = (): AgoraConfig => {
 // Generate RTC token for secure connections
 export const generateRTCToken = (
   channelName: string,
-  uid: string,
+  uid: string | number,
   role: RtcRoleType = RtcRole.PUBLISHER,
   tokenExpire: number = 3600,
   privilegeExpire: number = 0
 ): string => {
   const config = getAgoraConfig()
   
+  // Convert uid to number if it's a string
+  const numericUid = typeof uid === 'string' ? parseInt(uid, 10) : uid
+  
   return RtcTokenBuilder.buildTokenWithUid(
     config.appId,
     config.appCertificate,
     channelName,
-    uid,
+    numericUid,
     role,
     tokenExpire,
     privilegeExpire
