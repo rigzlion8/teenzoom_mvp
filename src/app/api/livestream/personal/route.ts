@@ -89,7 +89,14 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('Personal livestream created successfully:', livestream.id)
-    return NextResponse.json({ livestream })
+    
+    // Convert BigInt values to numbers for JSON serialization
+    const serializedLivestream = {
+      ...livestream,
+      viewerCount: Number(livestream.viewerCount)
+    }
+    
+    return NextResponse.json({ livestream: serializedLivestream })
   } catch (error) {
     console.error('Error starting personal livestream:', error)
     return NextResponse.json({ 
@@ -162,7 +169,13 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ livestreams })
+      // Convert BigInt values to numbers for JSON serialization
+      const serializedLivestreams = livestreams.map(stream => ({
+        ...stream,
+        viewerCount: Number(stream.viewerCount)
+      }))
+      
+      return NextResponse.json({ livestreams: serializedLivestreams })
     } else if (type === 'friends' || !type) {
       // Get friends' livestreams (both public and friends-only)
       const userFriendships = await prisma.friendship.findMany({
@@ -201,7 +214,13 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ livestreams })
+      // Convert BigInt values to numbers for JSON serialization
+      const serializedLivestreams = livestreams.map(stream => ({
+        ...stream,
+        viewerCount: Number(stream.viewerCount)
+      }))
+      
+      return NextResponse.json({ livestreams: serializedLivestreams })
     } else if (type === 'me') {
       const livestreams = await prisma.personalLivestream.findMany({
         where: {
@@ -222,7 +241,13 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ livestreams })
+      // Convert BigInt values to numbers for JSON serialization
+      const serializedLivestreams = livestreams.map(stream => ({
+        ...stream,
+        viewerCount: Number(stream.viewerCount)
+      }))
+      
+      return NextResponse.json({ livestreams: serializedLivestreams })
     }
 
     return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 })
