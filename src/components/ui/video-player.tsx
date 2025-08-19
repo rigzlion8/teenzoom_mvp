@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/hooks/use-toast'
-import { Play, Pause, Volume2, VolumeX, Maximize, Forward } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, Maximize, Forward, Trash2 } from 'lucide-react'
 
 interface VideoPlayerProps {
   videoUrl: string
@@ -14,9 +14,11 @@ interface VideoPlayerProps {
   title: string
   videoId: string
   onForward?: () => void
+  isOwner?: boolean
+  onDelete?: () => void
 }
 
-export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward }: VideoPlayerProps) {
+export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward, isOwner = false, onDelete }: VideoPlayerProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -28,6 +30,8 @@ export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward 
   const [selectedRoom, setSelectedRoom] = useState('')
   const [rooms, setRooms] = useState<Array<{ id: string; name: string }>>([])
   const [isLoadingRooms, setIsLoadingRooms] = useState(false)
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -143,6 +147,59 @@ export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward 
     }
   }
 
+  const handleDeleteVideo = async () => {
+    if (!isOwner || !session?.user?.id) return
+
+    try {
+      const response = await fetch(`/api/videos/${videoId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Video deleted successfully!",
+        })
+        onDelete?.()
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete video')
+      }
+    } catch (error) {
+      console.error('Error deleting video:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete video",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenuPosition({ x: e.clientX, y: e.clientY })
+    setShowContextMenu(true)
+  }
+
+  const handleLongPress = () => {
+    // For mobile devices, show context menu on long press
+    if (isOwner) {
+      setShowContextMenu(true)
+    }
+  }
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowContextMenu(false)
+    }
+
+    if (showContextMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showContextMenu])
+
   return (
     <div className="relative group">
       {/* Video Element */}
@@ -155,6 +212,14 @@ export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward 
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onClick={togglePlay}
+        onContextMenu={handleContextMenu}
+        onTouchStart={() => {
+          // Start long press timer for mobile
+          const timer = setTimeout(() => handleLongPress(), 500)
+          const cleanup = () => clearTimeout(timer)
+          document.addEventListener('touchend', cleanup, { once: true })
+          document.addEventListener('touchmove', cleanup, { once: true })
+        }}
       >
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
@@ -274,6 +339,25 @@ export function VideoPlayer({ videoUrl, thumbnailUrl, title, videoId, onForward 
       <div className="mt-2">
         <h3 className="font-semibold text-lg">{title}</h3>
       </div>
+
+      {/* Context Menu */}
+      {showContextMenu && isOwner && (
+        <div 
+          className="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 min-w-[150px]"
+          style={{
+            left: contextMenuPosition.x,
+            top: contextMenuPosition.y,
+          }}
+        >
+          <button
+            onClick={handleDeleteVideo}
+            className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Video
+          </button>
+        </div>
+      )}
     </div>
   )
 }

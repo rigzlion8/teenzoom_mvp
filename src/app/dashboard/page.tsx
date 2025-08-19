@@ -26,6 +26,7 @@ import { GoLiveDialog } from '@/components/go-live-dialog'
 import { LiveStreamsDisplay } from '@/components/live-streams-display'
 import { PersonalLivestreamViewer } from '@/components/personal-livestream-viewer'
 import { PersonalLivestreamStreamer } from '@/components/personal-livestream-streamer'
+import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
 import Link from "next/link"
 
 interface UserStats {
@@ -40,12 +41,20 @@ export default function DashboardPage() {
   const router = useRouter()
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isStreaming, setIsStreaming] = useState(false)
   const [currentStream, setCurrentStream] = useState<{
     title: string
     privacy: string
     viewerCount: number
   } | null>(null)
+
+  // Use the personal livestream hook to get real-time state
+  const {
+    isStreaming: hookIsStreaming,
+    isViewing: hookIsViewing,
+    title: streamTitle,
+    privacy: streamPrivacy,
+    viewerCount: streamViewerCount
+  } = usePersonalLivestream()
 
   const checkCurrentStream = useCallback(async () => {
     try {
@@ -58,14 +67,12 @@ export default function DashboardPage() {
         )
         
         if (activeStream) {
-          setIsStreaming(true)
           setCurrentStream({
             title: activeStream.title,
             privacy: activeStream.privacy,
             viewerCount: activeStream.viewerCount || 0
           })
         } else {
-          setIsStreaming(false)
           setCurrentStream(null)
         }
       }
@@ -73,6 +80,19 @@ export default function DashboardPage() {
       console.error('Failed to check current stream:', error)
     }
   }, [session?.user?.id])
+
+  // Update current stream info when hook state changes
+  useEffect(() => {
+    if (hookIsStreaming && streamTitle) {
+      setCurrentStream({
+        title: streamTitle,
+        privacy: streamPrivacy || 'public',
+        viewerCount: streamViewerCount
+      })
+    } else if (!hookIsStreaming) {
+      setCurrentStream(null)
+    }
+  }, [hookIsStreaming, streamTitle, streamPrivacy, streamViewerCount])
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -178,7 +198,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Current Stream Info */}
-        {isStreaming && currentStream && (
+        {hookIsStreaming && currentStream && (
           <div className="mb-6 sm:mb-8">
             <Card className="bg-green-900/20 backdrop-blur-sm border-green-500/30">
               <CardContent className="p-4 sm:p-6">
@@ -294,10 +314,10 @@ export default function DashboardPage() {
             <GoLiveDialog>
               <Button 
                 className="bg-green-600 hover:bg-green-700 text-sm sm:text-base py-2 sm:py-3 w-full"
-                disabled={isStreaming}
+                disabled={hookIsStreaming}
               >
                 <Video className="w-4 h-4 mr-2" />
-                {isStreaming ? 'Already Live' : 'Go Live'}
+                {hookIsStreaming ? 'Already Live' : 'Go Live'}
               </Button>
             </GoLiveDialog>
             <Button 
@@ -360,11 +380,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Personal Livestream Components */}
-        {isStreaming ? (
+        {hookIsStreaming ? (
           <PersonalLivestreamStreamer onClose={() => {}} />
-        ) : (
+        ) : hookIsViewing ? (
           <PersonalLivestreamViewer onClose={() => {}} />
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -336,8 +336,13 @@ export default function VideosPage() {
               thumbnailUrl={video.thumbnailUrl}
               title={video.title}
               videoId={video.id}
+              isOwner={video.isOwner}
               onForward={() => {
                 // Refresh videos after forwarding
+                fetchVideos()
+              }}
+              onDelete={() => {
+                // Refresh videos after deletion
                 fetchVideos()
               }}
             />
