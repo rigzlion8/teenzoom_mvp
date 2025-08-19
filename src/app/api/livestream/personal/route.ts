@@ -10,10 +10,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { privacy, title, description } = await request.json()
+    const body = await request.json()
+    const { privacy, title, description } = body
+
+    console.log('Personal livestream request:', { 
+      userId: session.user.id, 
+      privacy, 
+      title, 
+      description,
+      body 
+    })
 
     if (!privacy || !['public', 'friends-only'].includes(privacy)) {
-      return NextResponse.json({ error: 'Invalid privacy setting' }, { status: 400 })
+      console.error('Invalid privacy setting:', privacy)
+      return NextResponse.json({ 
+        error: 'Invalid privacy setting', 
+        received: privacy,
+        validOptions: ['public', 'friends-only']
+      }, { status: 400 })
     }
 
     // Check if user is already live
@@ -25,6 +39,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingStream) {
+      console.error('User already streaming:', session.user.id)
       return NextResponse.json({ error: 'You are already live streaming' }, { status: 400 })
     }
 
@@ -49,10 +64,14 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('Personal livestream created successfully:', livestream.id)
     return NextResponse.json({ livestream })
   } catch (error) {
     console.error('Error starting personal livestream:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
