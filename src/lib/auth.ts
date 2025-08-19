@@ -35,6 +35,8 @@ declare module "next-auth" {
 // Extend JWT types
 declare module "next-auth/jwt" {
   interface JWT {
+    username: string
+    displayName: string
     role: string
     coins: number
     vipLifetime: boolean
@@ -106,6 +108,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.username = user.username
+        token.displayName = user.displayName
         token.role = user.role
         token.coins = user.coins
         token.vipLifetime = user.vipLifetime
@@ -117,6 +121,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!
+        session.user.username = token.username as string
+        session.user.displayName = token.displayName as string
         session.user.role = token.role
         session.user.coins = token.coins
         session.user.vipLifetime = token.vipLifetime

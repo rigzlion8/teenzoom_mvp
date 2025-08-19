@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast'
 
 interface Room {
   id: string
+  roomId: string
   name: string
   description: string
   category: string
@@ -307,7 +308,7 @@ export default function RoomsPage() {
                 <div className="flex gap-2">
                   {room.isMember ? (
                     <>
-                      <Link href={`/room/${room.id}`} className="flex-1">
+                      <Link href={`/room/${room.roomId || room.id}`} className="flex-1">
                         <Button className="w-full">
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Enter Room

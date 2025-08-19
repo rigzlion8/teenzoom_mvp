@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       
       return {
         id: room.id,
+        roomId: room.roomId,
         name: room.name,
         description: room.description,
         category: room.category,

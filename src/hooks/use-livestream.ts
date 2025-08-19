@@ -207,7 +207,7 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: roomId,
+          channelName: `room_${roomId}`,
           role: 'host',
           uid: session.user.id
         })
@@ -222,7 +222,7 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
       // Join channel
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        roomId,
+        `room_${roomId}`,
         token,
         session.user.id
       )
@@ -295,7 +295,7 @@ export const useLivestream = (roomId: string): UseLivestreamReturn => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: roomId,
+          channelName: `room_${roomId}`,
           role: 'audience',
           uid: session.user.id
         })

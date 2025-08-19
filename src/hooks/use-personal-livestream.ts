@@ -372,7 +372,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Join channel as audience
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`,
+        `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}`,
         token,
         session.user.id
       )

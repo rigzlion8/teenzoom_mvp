@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -28,18 +28,40 @@ import { LivestreamControls } from '@/components/ui/livestream-controls'
 import { ChatMessage } from '@/lib/socket-server'
 
 interface RoomInfo {
+  id: string
   name: string
   description: string
   memberCount: number
+  category: string
+  privacy: string
+  owner: {
+    id: string
+    username: string
+    displayName: string
+  }
+  isMember: boolean
+  isOwner: boolean
 }
 
 export default function ChatRoomPage({ params }: { params: Promise<{ roomId: string }> }) {
   const [roomId, setRoomId] = useState<string>('')
+  const [actualRoomId, setActualRoomId] = useState<string>('')
   
   useEffect(() => {
     const resolveParams = async () => {
       const resolvedParams = await params
-      setRoomId(resolvedParams.roomId)
+      const paramRoomId = resolvedParams.roomId
+      setRoomId(paramRoomId)
+      
+      // If the param is a MongoDB ObjectID (24 hex chars), try to find the actual roomId
+      if (/^[0-9a-fA-F]{24}$/.test(paramRoomId)) {
+        // This is likely a MongoDB ObjectID, we'll need to fetch the room info
+        // The room info will be fetched in the ChatRoomClient component
+        setActualRoomId(paramRoomId)
+      } else {
+        // This is likely a human-readable roomId
+        setActualRoomId(paramRoomId)
+      }
     }
     resolveParams()
   }, [params])
@@ -55,21 +77,18 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
     )
   }
   
-  return <ChatRoomClient roomId={roomId} />
+  return <ChatRoomClient roomId={roomId} actualRoomId={actualRoomId} />
 }
 
-function ChatRoomClient({ roomId }: { roomId: string }) {
+function ChatRoomClient({ roomId, actualRoomId }: { roomId: string; actualRoomId: string }) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [newMessage, setNewMessage] = useState('')
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
-  const [roomInfo] = useState<RoomInfo>({
-    name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
-    description: `Welcome to the ${roomId || 'chat'} room!`,
-    memberCount: 0
-  })
+  const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null)
+  const [isLoadingRoom, setIsLoadingRoom] = useState(true)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -83,6 +102,53 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
     startTyping,
     stopTyping
   } = useSocket(roomId)
+
+  // Fetch room information
+  const fetchRoomInfo = useCallback(async () => {
+    try {
+      setIsLoadingRoom(true)
+      // Try to fetch room info using the actualRoomId first, then fallback to roomId
+      let response = await fetch(`/api/rooms/${actualRoomId}`)
+      if (!response.ok) {
+        // If that fails, try with the original roomId
+        response = await fetch(`/api/rooms/${roomId}`)
+      }
+      if (response.ok) {
+        const data = await response.json()
+        setRoomInfo(data.room)
+      } else {
+        console.error('Failed to fetch room info')
+        // Fallback to basic room info
+        setRoomInfo({
+          id: roomId,
+          name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
+          description: `Welcome to the ${roomId || 'chat'} room!`,
+          memberCount: 0,
+          category: 'general',
+          privacy: 'public',
+          owner: { id: '', username: '', displayName: '' },
+          isMember: false,
+          isOwner: false
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching room info:', error)
+      // Fallback to basic room info
+      setRoomInfo({
+        id: roomId,
+        name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
+        description: `Welcome to the ${roomId || 'chat'} room!`,
+        memberCount: 0,
+        category: 'general',
+        privacy: 'public',
+        owner: { id: '', username: '', displayName: '' },
+        isMember: false,
+        isOwner: false
+      })
+    } finally {
+      setIsLoadingRoom(false)
+    }
+  }, [roomId, actualRoomId])
 
   // Use our Livestream hook
   const {
@@ -101,6 +167,13 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
     toggleVideo,
     toggleAudio
   } = useLivestream(roomId)
+
+  // Fetch room info on mount
+  useEffect(() => {
+    if (roomId || actualRoomId) {
+      fetchRoomInfo()
+    }
+  }, [roomId, actualRoomId, fetchRoomInfo])
 
   // Auto-start livestream when navigated with ?goLive=1
   const autoGoLive = searchParams?.get('goLive') === '1'
@@ -271,8 +344,8 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
             </Button>
             
             <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl font-bold text-white truncate">{roomInfo.name}</h1>
-              <p className="text-xs sm:text-sm text-gray-300 truncate">{roomInfo.description}</p>
+              <h1 className="text-lg sm:text-xl font-bold text-white truncate">{roomInfo?.name || 'Loading...'}</h1>
+              <p className="text-xs sm:text-sm text-gray-300 truncate">{roomInfo?.description || 'Loading room information...'}</p>
             </div>
           </div>
           
@@ -294,7 +367,7 @@ function ChatRoomClient({ roomId }: { roomId: string }) {
             
             <div className="hidden sm:flex items-center gap-1 sm:gap-2 text-white">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="text-xs sm:text-sm">{roomInfo.memberCount} online</span>
+              <span className="text-xs sm:text-sm">{roomInfo?.memberCount || 0} online</span>
             </div>
             
             {/* Stream Status */}

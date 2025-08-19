@@ -92,9 +92,7 @@ export default function DashboardPage() {
     signOut({ callbackUrl: "/" })
   }
 
-  const handleJoinRoom = (roomId: string) => {
-    router.push(`/room/${roomId}`)
-  }
+
 
   if (status === "loading" || isLoading) {
     return (
@@ -302,11 +300,11 @@ export default function DashboardPage() {
               </Button>
             </GoLiveDialog>
             <Button 
-              onClick={() => handleJoinRoom("general")}
+              onClick={() => router.push("/rooms")}
               className="bg-purple-600 hover:bg-purple-700 text-sm sm:text-base py-2 sm:py-3 w-full"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
-              Join General Chat
+              Browse Rooms
             </Button>
             <Button 
               onClick={() => router.push("/rooms/create")}
