@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
         displayName: friend.displayName,
         isOnline,
         lastSeen: friend.lastSeen,
-        level: friend.level,
-        xp: friend.xp
+        level: Number(friend.level),
+        xp: Number(friend.xp)
       }
     })
 

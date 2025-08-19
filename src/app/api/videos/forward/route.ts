@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         description: video.description || `Forwarded by ${session.user.displayName || session.user.username}`,
         videoUrl: video.videoUrl,
         thumbnailUrl: video.thumbnailUrl,
-        duration: video.duration,
+        duration: Number(video.duration),
         roomId: targetRoomId,
         uploadedBy: session.user.id,
         isForwarded: true,

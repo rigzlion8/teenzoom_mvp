@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       description: video.description,
       videoUrl: video.videoUrl,
       thumbnailUrl: video.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0xNjAgOTBDMTYwIDg5LjQ0NzcgMTU5LjU1MiA4OSAxNTkgODlDMTU4LjQ0OCA4OSAxNTggODkuNDQ3NyAxNTggOTBDMTU4IDkwLjU1MjMgMTU4LjQ0OCA5MSAxNTkgOTFDMTU5LjU1MiA5MSAxNjAgOTAuNTUyMyAxNjAgOTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K', // Fallback to SVG placeholder
-      duration: video.duration,
+      duration: Number(video.duration),
       privacy: video.privacy,
       createdAt: video.createdAt,
       updatedAt: video.updatedAt,

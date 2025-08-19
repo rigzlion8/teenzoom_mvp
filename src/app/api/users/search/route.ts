@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
 
         return {
           ...user,
+          level: Number(user.level),
+          xp: Number(user.xp),
           friendshipStatus: friendship ? friendship.status : 'none'
         }
       })

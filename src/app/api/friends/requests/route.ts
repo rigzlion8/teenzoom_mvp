@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         id: request.user.id,
         username: request.user.username,
         displayName: request.user.displayName,
-        level: request.user.level
+        level: Number(request.user.level)
       },
       status: request.status,
       createdAt: request.createdAt

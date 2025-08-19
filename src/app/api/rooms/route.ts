@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
         category: room.category,
         privacy: room.privacy,
         memberCount,
-        maxMembers: room.maxUsers,
+        maxMembers: Number(room.maxUsers),
         isActive: room.isActive,
         tags: room.tags,
         createdAt: room.createdAt,
