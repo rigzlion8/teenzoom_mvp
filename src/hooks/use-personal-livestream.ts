@@ -250,7 +250,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: `personal-${session.user.id}`,
+          channelName: `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`,
           role: 'host',
           uid: session.user.id
         })
@@ -265,7 +265,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Join channel
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        `personal-${session.user.id}`,
+        `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`,
         token,
         session.user.id
       )
@@ -290,7 +290,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         streamerName: session.user.displayName || session.user.username || 'Unknown',
         title: livestream.title,
         privacy: livestream.privacy,
-        channelName: `personal-${session.user.id}`
+        channelName: `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`
       })
 
     } catch (error) {
@@ -357,7 +357,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: `personal-${streamerId}`,
+          channelName: `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`,
           role: 'audience',
           uid: session.user.id
         })
@@ -372,7 +372,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Join channel as audience
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        `personal-${streamerId}`,
+        `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`,
         token,
         session.user.id
       )
