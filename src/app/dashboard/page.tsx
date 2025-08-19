@@ -57,6 +57,11 @@ export default function DashboardPage() {
     connectionStatus
   } = usePersonalLivestream()
 
+  // Debug connection status
+  useEffect(() => {
+    console.log('🔍 Dashboard connection status:', connectionStatus)
+  }, [connectionStatus])
+
   const checkCurrentStream = useCallback(async () => {
     try {
       const response = await fetch('/api/livestream/personal')
@@ -324,7 +329,7 @@ export default function DashboardPage() {
         <div className="mb-6 sm:mb-8">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">More Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-            <GoLiveDialog>
+            <GoLiveDialog connectionStatus={connectionStatus}>
               <Button 
                 className={`text-sm sm:text-base py-2 sm:py-3 w-full ${
                   hookIsStreaming 
@@ -343,8 +348,8 @@ export default function DashboardPage() {
                   : connectionStatus === 'connecting'
                   ? 'Connecting...'
                   : connectionStatus === 'failed'
-                  ? 'Connection Failed'
-                  : 'Go Live'
+                    ? 'Connection Failed'
+                    : 'Go Live'
                 }
               </Button>
             </GoLiveDialog>

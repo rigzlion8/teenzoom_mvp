@@ -307,19 +307,23 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       }
 
       // Retry joining the channel
+      console.log('🔄 Setting connection status to connecting...')
       setConnectionStatus('connecting')
       while (retryCount < maxRetries) {
         try {
+          console.log(`🔄 Attempting to join channel (attempt ${retryCount + 1}/${maxRetries})...`)
           await joinChannel()
+          console.log('✅ Successfully joined channel, setting status to connected')
           setConnectionStatus('connected')
           break // Success, exit retry loop
         } catch (error) {
           retryCount++
           if (retryCount >= maxRetries) {
+            console.log('❌ All retry attempts failed, setting status to failed')
             setConnectionStatus('failed')
             throw new Error(`Failed to join channel after ${maxRetries} attempts: ${error}`)
           }
-          console.log(`Retrying connection... (${retryCount}/${maxRetries})`)
+          console.log(`🔄 Retrying connection... (${retryCount}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)) // Exponential backoff
         }
       }

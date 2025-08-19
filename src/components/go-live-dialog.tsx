@@ -13,9 +13,10 @@ import { useToast } from '@/hooks/use-toast'
 
 interface GoLiveDialogProps {
   children: React.ReactNode
+  connectionStatus?: 'idle' | 'connecting' | 'connected' | 'failed'
 }
 
-export function GoLiveDialog({ children }: GoLiveDialogProps) {
+export function GoLiveDialog({ children, connectionStatus }: GoLiveDialogProps) {
   const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [privacy, setPrivacy] = useState<'public' | 'friends-only'>('public')
@@ -33,6 +34,16 @@ export function GoLiveDialog({ children }: GoLiveDialogProps) {
       toast({
         title: "Error",
         description: "Please enter a stream title",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Don't allow starting if connection is already in progress
+    if (connectionStatus === 'connecting') {
+      toast({
+        title: "Warning",
+        description: "Connection already in progress. Please wait.",
         variant: "destructive"
       })
       return
