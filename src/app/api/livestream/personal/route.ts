@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is already live
-    const existingStream = await prisma.personal_livestreams.findFirst({
+    const existingStream = await prisma.personalLivestream.findFirst({
       where: {
         streamerId: session.user.id,
         isLive: true
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     console.log('Creating new personal livestream...')
     
     // Create new personal livestream
-    const livestream = await prisma.personal_livestreams.create({
+    const livestream = await prisma.personalLivestream.create({
       data: {
         streamerId: session.user.id,
         title: title || `${session.user.displayName || session.user.username}'s Stream`,
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
 
     if (action === 'stop') {
       // Stop the user's livestream
-          const livestream = await prisma.personal_livestreams.updateMany({
+          const livestream = await prisma.personalLivestream.updateMany({
       where: {
         streamerId: session.user.id,
         isLive: true
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
 
     if (type === 'discover') {
       // Get all public livestreams
-      const livestreams = await prisma.personal_livestreams.findMany({
+      const livestreams = await prisma.personalLivestream.findMany({
         where: {
           isLive: true,
           privacy: 'public'
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
         f.userId === session.user.id ? f.friendId : f.userId
       )
 
-      const livestreams = await prisma.personal_livestreams.findMany({
+      const livestreams = await prisma.personalLivestream.findMany({
         where: {
           streamerId: { in: friendIds },
           isLive: true
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ livestreams })
     } else if (type === 'me') {
-      const livestreams = await prisma.personal_livestreams.findMany({
+      const livestreams = await prisma.personalLivestream.findMany({
         where: {
           streamerId: session.user.id,
           isLive: true

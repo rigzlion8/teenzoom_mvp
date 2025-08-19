@@ -80,6 +80,11 @@ model personal_livestreams {
   title       String
   updatedAt   DateTime @db.Date
   viewerCount BigInt
+
+  // Relations
+  streamer    users    @relation("PersonalLivestreams", fields: [streamerId], references: [id], onDelete: Cascade)
+
+  @@map("personal_livestreams")
 }
 
 model room_members {
@@ -91,6 +96,7 @@ model room_members {
   userId   String   @db.ObjectId
 
   @@unique([userId, roomId])
+  @@map("room_members")
 }
 
 model room_videos {
@@ -106,6 +112,8 @@ model room_videos {
   updatedAt    DateTime @db.Date
   uploadedBy   String   @db.ObjectId
   videoUrl     String
+
+  @@map("room_videos")
 }
 
 model rooms {
@@ -127,6 +135,8 @@ model rooms {
   /// Could not determine type: the field only had null or empty values in the sample set.
   tags             Json?
   updatedAt        DateTime @db.Date
+
+  @@map("rooms")
 }
 
 model users {
@@ -144,4 +154,9 @@ model users {
   username     String   @unique
   vipLifetime  Boolean
   xp           BigInt
+
+  // Relations
+  personalLivestreams personal_livestreams[] @relation("PersonalLivestreams")
+
+  @@map("users")
 }
