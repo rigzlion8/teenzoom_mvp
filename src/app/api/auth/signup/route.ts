@@ -72,7 +72,11 @@ export async function POST(request: NextRequest) {
         coins: 100,
         vipLifetime: false,
         xp: 0,
-        level: 1
+        level: 1,
+        isOnline: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSeen: new Date()
       }
     })
 
