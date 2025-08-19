@@ -15,12 +15,17 @@ async function main() {
     create: {
       username: 'Crosslow7',
       displayName: 'Admin',
+      email: 'admin@teenzoom.com',
       passwordHash: adminPasswordHash,
       role: 'admin',
       coins: 50000,
       vipLifetime: true,
       xp: 1000,
-      level: 10
+      level: 10,
+      isOnline: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSeen: new Date()
     }
   })
 
@@ -37,7 +42,14 @@ async function main() {
       privacy: 'public',
       category: 'general',
       maxUsers: 100,
-      ownerId: admin.id
+      ownerId: admin.id,
+      allowFileSharing: true,
+      allowVideo: true,
+      isActive: true,
+      requireApproval: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastActivity: new Date()
     }
   })
 
@@ -56,7 +68,8 @@ async function main() {
       userId: admin.id,
       roomId: generalRoom.id,
       role: 'admin',
-      isActive: true
+      isActive: true,
+      joinedAt: new Date()
     }
   })
 
@@ -68,7 +81,9 @@ async function main() {
       content: 'Welcome to TeenZoom v2.0! 🎉',
       userId: admin.id,
       roomId: generalRoom.id,
-      messageType: 'text'
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
 

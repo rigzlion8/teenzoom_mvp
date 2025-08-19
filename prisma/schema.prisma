@@ -44,8 +44,17 @@ model friendships {
   @@unique([userId, friendId])
 }
 
-model messages {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+model Message {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  content     String
+  userId      String      @db.ObjectId
+  roomId      String      @db.ObjectId
+  messageType String
+  fileUrl     String?
+  createdAt   DateTime    @db.Date
+  updatedAt   DateTime    @db.Date
+
+  @@map("messages")
 }
 
 model moderation_logs {
@@ -69,7 +78,7 @@ model payments {
   paystackRef Json?  @unique
 }
 
-model personal_livestreams {
+model PersonalLivestream {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt   DateTime @db.Date
   description String
@@ -82,12 +91,12 @@ model personal_livestreams {
   viewerCount BigInt
 
   // Relations
-  streamer    users    @relation("PersonalLivestreams", fields: [streamerId], references: [id], onDelete: Cascade)
+  streamer    User     @relation("PersonalLivestreams", fields: [streamerId], references: [id], onDelete: Cascade)
 
   @@map("personal_livestreams")
 }
 
-model room_members {
+model RoomMember {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   isActive Boolean
   joinedAt DateTime @db.Date
@@ -99,7 +108,7 @@ model room_members {
   @@map("room_members")
 }
 
-model room_videos {
+model RoomVideo {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt    DateTime @db.Date
   description  String
@@ -116,7 +125,7 @@ model room_videos {
   @@map("room_videos")
 }
 
-model rooms {
+model Room {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   allowFileSharing Boolean
   allowVideo       Boolean
@@ -139,7 +148,7 @@ model rooms {
   @@map("rooms")
 }
 
-model users {
+model User {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   coins        BigInt
   createdAt    DateTime @db.Date
@@ -154,9 +163,11 @@ model users {
   username     String   @unique
   vipLifetime  Boolean
   xp           BigInt
+  resetToken   String?
+  resetTokenExpiry DateTime?
 
   // Relations
-  personalLivestreams personal_livestreams[] @relation("PersonalLivestreams")
+  personalLivestreams PersonalLivestream[] @relation("PersonalLivestreams")
 
   @@map("users")
 }
