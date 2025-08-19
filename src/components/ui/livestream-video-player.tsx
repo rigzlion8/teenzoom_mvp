@@ -5,22 +5,22 @@ interface ICameraVideoTrack {
   enabled: boolean
   setEnabled: (enabled: boolean) => void
   close: () => void
-  play: (element: HTMLElement) => void
+  play?: (element: HTMLElement) => void
 }
 
 interface IMicrophoneAudioTrack {
   enabled: boolean
   setEnabled: (enabled: boolean) => void
   close: () => void
-  play: (element?: HTMLElement) => void
+  play?: (element?: HTMLElement) => void
 }
 
 interface IRemoteVideoTrack {
-  play: (element: HTMLElement) => void
+  play?: (element: HTMLElement) => void
 }
 
 interface IRemoteAudioTrack {
-  play: (element?: HTMLElement) => void
+  play?: (element?: HTMLElement) => void
 }
 
 interface LivestreamVideoPlayerProps {
@@ -41,13 +41,19 @@ export const LivestreamVideoPlayer = ({
 
   useEffect(() => {
     if (videoTrack && videoRef.current) {
-      videoTrack.play(videoRef.current)
+      // Handle both local and remote video tracks
+      if ('play' in videoTrack && typeof videoTrack.play === 'function') {
+        videoTrack.play(videoRef.current)
+      }
     }
   }, [videoTrack])
 
   useEffect(() => {
     if (audioTrack) {
-      audioTrack.play()
+      // Handle both local and remote audio tracks
+      if ('play' in audioTrack && typeof audioTrack.play === 'function') {
+        audioTrack.play()
+      }
     }
   }, [audioTrack])
 

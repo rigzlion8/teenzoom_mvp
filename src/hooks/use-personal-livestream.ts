@@ -109,6 +109,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
   const agoraClientRef = useRef<IAgoraRTCClient | null>(null)
   const localTracksRef = useRef<{ video: ICameraVideoTrack | null; audio: IMicrophoneAudioTrack | null }>({ video: null, audio: null })
   const currentStreamIdRef = useRef<string | null>(null)
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Event handlers
   const handleUserPublished = useCallback(async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
@@ -297,6 +298,22 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       setTitle(livestream.title)
       setDescription(livestream.description)
       setPrivacy(livestream.privacy)
+
+      // Start heartbeat to keep stream alive
+      const heartbeatInterval = setInterval(async () => {
+        try {
+          await fetch('/api/livestream/personal/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ streamId: livestream.id })
+          })
+        } catch (error) {
+          console.error('Heartbeat failed:', error)
+        }
+      }, 30000) // Every 30 seconds
+
+      // Store interval reference for cleanup
+      heartbeatIntervalRef.current = heartbeatInterval
       setViewerCount(0)
 
       // Notify others via Socket.IO
@@ -339,6 +356,12 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'stop' })
         })
+      }
+
+      // Clear heartbeat interval
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
       }
 
       // Reset state

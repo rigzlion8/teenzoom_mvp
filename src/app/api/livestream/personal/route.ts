@@ -159,7 +159,21 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') // 'discover' | 'friends' | 'me' | null
 
     if (type === 'discover') {
-      // Get all public livestreams
+      // Clean up stale streams first (older than 5 minutes without updates)
+      const staleThreshold = new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      
+      await prisma.personalLivestream.updateMany({
+        where: {
+          isLive: true,
+          updatedAt: { lt: staleThreshold }
+        },
+        data: {
+          isLive: false,
+          endedAt: new Date()
+        }
+      })
+
+      // Get all public livestreams (after cleanup)
       const livestreams = await prisma.personalLivestream.findMany({
         where: {
           isLive: true,
@@ -187,6 +201,20 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json({ livestreams: serializedLivestreams })
     } else if (type === 'friends' || !type) {
+      // Clean up stale streams first (older than 5 minutes without updates)
+      const staleThreshold = new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      
+      await prisma.personalLivestream.updateMany({
+        where: {
+          isLive: true,
+          updatedAt: { lt: staleThreshold }
+        },
+        data: {
+          isLive: false,
+          endedAt: new Date()
+        }
+      })
+
       // Get friends' livestreams (both public and friends-only)
       const userFriendships = await prisma.friendship.findMany({
         where: {
@@ -232,6 +260,20 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json({ livestreams: serializedLivestreams })
     } else if (type === 'me') {
+      // Clean up stale streams first (older than 5 minutes without updates)
+      const staleThreshold = new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      
+      await prisma.personalLivestream.updateMany({
+        where: {
+          isLive: true,
+          updatedAt: { lt: staleThreshold }
+        },
+        data: {
+          isLive: false,
+          endedAt: new Date()
+        }
+      })
+
       const livestreams = await prisma.personalLivestream.findMany({
         where: {
           streamerId: session.user.id,

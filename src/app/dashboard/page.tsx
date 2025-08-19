@@ -25,6 +25,7 @@ import { CardDescription } from "@/components/ui/card"
 import { GoLiveDialog } from '@/components/go-live-dialog'
 import { LiveStreamsDisplay } from '@/components/live-streams-display'
 import { PersonalLivestreamViewer } from '@/components/personal-livestream-viewer'
+import { PersonalLivestreamStreamer } from '@/components/personal-livestream-streamer'
 import Link from "next/link"
 
 interface UserStats {
@@ -358,8 +359,12 @@ export default function DashboardPage() {
           <DashboardNotifications />
         </div>
 
-        {/* Personal Livestream Viewer */}
-        <PersonalLivestreamViewer onClose={() => {}} />
+        {/* Personal Livestream Components */}
+        {isStreaming ? (
+          <PersonalLivestreamStreamer onClose={() => {}} />
+        ) : (
+          <PersonalLivestreamViewer onClose={() => {}} />
+        )}
       </div>
     </div>
   )
