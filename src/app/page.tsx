@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { 
   MessageCircle, 
   Users, 
@@ -9,8 +8,7 @@ import {
   Coins, 
   Shield, 
   Zap,
-  ArrowRight,
-  Star
+  ArrowRight
 } from "lucide-react"
 
 export default function HomePage() {
@@ -19,25 +17,20 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20 text-center text-white">
         <div className="mb-6 sm:mb-8">
-          <Badge variant="secondary" className="mb-3 sm:mb-4 text-sm sm:text-lg px-3 sm:px-4 py-1 sm:py-2">
-            <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-            Version 2.0 - Now with Next.js 15!
-          </Badge>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            TeenZoom
+          </h1>
         </div>
         
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-          TeenZoom
-        </h1>
-        
         <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-gray-300 max-w-3xl mx-auto px-4">
-          The next generation teen social platform. Chat, share videos, make friends, 
-          and earn rewards in a safe, modern environment built with cutting-edge technology.
+          The next generation social platform. Livestream, Chat, share videos, make friends, 
+          and earn rewards in a safe, modern environment built with cutting-edge tech.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 sm:mb-16 px-4">
           <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4">
             <Link href="/auth/signin">
-              Get Started
+              Check In
               <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </Button>
@@ -63,7 +56,7 @@ export default function HomePage() {
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Real-time Chat</CardTitle>
                 <CardDescription className="text-gray-300 text-sm sm:text-base">
-                  Join the general chat room and start messaging with friends
+                  Join the general chat room and start messaging and Go Live with friends
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -93,7 +86,7 @@ export default function HomePage() {
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Community</CardTitle>
                 <CardDescription className="text-gray-300 text-sm sm:text-base">
-                  Discover and join rooms to connect with like-minded teens
+                  Discover, create and join rooms to connect with your tribe
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -104,7 +97,7 @@ export default function HomePage() {
               <Coins className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400 mb-3 sm:mb-4" />
               <CardTitle className="text-lg sm:text-xl">Rewards System</CardTitle>
               <CardDescription className="text-gray-300 text-sm sm:text-base">
-                Earn coins, XP, and unlock VIP features
+                Earn coins, XP, subscribe and unlock the VIP shop and other cool features
               </CardDescription>
             </CardHeader>
           </Card>
@@ -124,7 +117,7 @@ export default function HomePage() {
               <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 mb-3 sm:mb-4" />
               <CardTitle className="text-lg sm:text-xl">Lightning Fast</CardTitle>
               <CardDescription className="text-gray-300 text-sm sm:text-base">
-                Built with Next.js 15 and modern technologies
+                Built with Next.js 15 and modern tech leveraging on AI
               </CardDescription>
             </CardHeader>
           </Card>
@@ -138,7 +131,7 @@ export default function HomePage() {
             Ready to Join the Future?
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 text-center">
-            Experience the next generation of teen social platforms with TeenZoom v2.0
+            Experience the next generation of social platforms with TeenZoom v2.0
           </p>
           <div className="text-center">
             <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700 text-base sm:text-lg lg:text-xl px-6 sm:px-8 py-3 sm:py-4">
