@@ -1,6 +1,3 @@
-// TeenZoom v2.0 Prisma Schema
-// MongoDB + Next.js 15 + React + Redis + Paystack + Resend
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,314 +7,141 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  username     String   @unique
-  email        String?  @unique
-  displayName  String
-  passwordHash String
-  role         Role     @default(user)
-  coins        Int      @default(100)
-  vipLifetime  Boolean  @default(false)
-  xp           Int      @default(0)
-  level        Int      @default(1)
-  avatar       String?
-  bio          String?
-  isOnline     Boolean  @default(false)
-  lastSeen     DateTime @default(now())
-  resetToken   String?
-  resetTokenExpiry DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  messages     Message[]
-  rooms       RoomMember[]
-  friends     Friendship[]
-  friendOf    Friendship[] @relation("FriendOf")
-  sentPayments Payment[]   @relation("Sender")
-  receivedPayments Payment[] @relation("Receiver")
-  moderationLogs ModerationLog[]
-  ownedRooms   Room[]      @relation("RoomOwner")
-  notifications Notification[]
-  uploadedVideos RoomVideo[] @relation("VideoAuthor")
-  sentMessages DirectMessage[] @relation("SentMessages")
-  receivedMessages DirectMessage[] @relation("ReceivedMessages")
-  personalLivestreams PersonalLivestream[] @relation("PersonalLivestreams")
-
-  @@map("users")
+type NotificationsData {
+  friendId   String?
+  roomId     String?
+  uploaderId String?
+  videoId    String?
 }
 
-model Room {
+model direct_messages {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId     String   @unique
-  name       String
-  description String?
-  category   String   @default("general")
-  privacy    RoomPrivacy @default(public)
-  maxUsers   Int      @default(50)
-  isActive   Boolean  @default(true)
-  tags       String[]
-  lastActivity DateTime @default(now())
-  ownerId    String   @db.ObjectId
-  allowVideo Boolean  @default(true)
-  allowFileSharing Boolean @default(true)
-  requireApproval Boolean @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relations
-  members    RoomMember[]
-  messages   Message[]
-  videos     RoomVideo[]
-  owner      User     @relation("RoomOwner", fields: [ownerId], references: [id])
-
-  @@map("rooms")
+  content     String
+  createdAt   DateTime @db.Date
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  fileName    Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  fileSize    Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  fileType    Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  fileUrl     Json?
+  isRead      Boolean
+  messageType String
+  receiverId  String   @db.ObjectId
+  senderId    String   @db.ObjectId
+  updatedAt   DateTime @db.Date
 }
 
-model RoomMember {
+model friendships {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  roomId    String   @db.ObjectId
-  role      MemberRole @default(member)
-  joinedAt  DateTime @default(now())
-  isActive  Boolean  @default(true)
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roomId])
-  @@map("room_members")
-}
-
-model Message {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String
-  userId    String   @db.ObjectId
-  roomId    String   @db.ObjectId
-  messageType MessageType @default(text)
-  fileUrl   String?
-  fileName  String?
-  fileSize  Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@map("messages")
-}
-
-model RoomVideo {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  description String?
-  videoUrl  String
-  thumbnailUrl String?
-  duration  Int?
-  roomId    String   @db.ObjectId
-  uploadedBy String  @db.ObjectId
-  privacy   VideoPrivacy @default(public)
-  isForwarded Boolean @default(false)
-  originalVideoId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  author    User     @relation("VideoAuthor", fields: [uploadedBy], references: [id], onDelete: Cascade)
-
-  @@map("room_videos")
-}
-
-model Friendship {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
+  createdAt DateTime @db.Date
   friendId  String   @db.ObjectId
-  status    FriendshipStatus @default(pending)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  friend    User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  status    String
+  updatedAt DateTime @db.Date
+  userId    String   @db.ObjectId
 
   @@unique([userId, friendId])
-  @@map("friendships")
 }
 
-model Payment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  amount      Float
-  currency    String   @default("KES")
-  paymentType PaymentType
-  status      PaymentStatus @default(pending)
-  paystackRef String?  @unique
-  senderId    String   @db.ObjectId
-  receiverId  String   @db.ObjectId
-  description String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver   User     @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@map("payments")
+model messages {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 }
 
-model ModerationLog {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  action      ModerationAction
-  targetType  TargetType
-  targetId    String
-  moderatorId String   @db.ObjectId
-  reason      String?
-  details     Json?
-  createdAt   DateTime @default(now())
-
-  // Relations
-  moderator  User     @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
-
-  @@map("moderation_logs")
+model moderation_logs {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 }
 
-model Notification {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  type      NotificationType
-  title     String
+model notifications {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime          @db.Date
+  data      NotificationsData
+  isRead    Boolean
   message   String
-  data      Json?    // Additional data like friendId, roomId, etc.
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
+  title     String
+  type      String
+  userId    String            @db.ObjectId
 }
 
-model DirectMessage {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  senderId  String   @db.ObjectId
-  receiverId String  @db.ObjectId
-  content   String
-  messageType MessageType @default(text)
-  fileUrl   String?
-  fileName  String?
-  fileSize  Int?
-  fileType  String?
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@map("direct_messages")
+model payments {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  /// Field referred in an index, but found no data to define the type.
+  paystackRef Json?  @unique
 }
 
-model PersonalLivestream {
+model personal_livestreams {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime @db.Date
+  description String
+  isLive      Boolean
+  privacy     String
+  startedAt   DateTime @db.Date
   streamerId  String   @db.ObjectId
   title       String
-  description String?
-  privacy     String   @default("public") // "public" or "friends-only"
-  isLive      Boolean  @default(false)
-  startedAt   DateTime @default(now())
-  endedAt     DateTime?
-  viewerCount Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  streamer    User     @relation("PersonalLivestreams", fields: [streamerId], references: [id], onDelete: Cascade)
-
-  @@map("personal_livestreams")
+  updatedAt   DateTime @db.Date
+  viewerCount BigInt
 }
 
-// Enums
-enum Role {
-  user
-  moderator
-  admin
+model room_members {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean
+  joinedAt DateTime @db.Date
+  role     String
+  roomId   String   @db.ObjectId
+  userId   String   @db.ObjectId
+
+  @@unique([userId, roomId])
 }
 
-enum MemberRole {
-  member
-  moderator
-  admin
+model room_videos {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime @db.Date
+  description  String
+  duration     BigInt
+  isForwarded  Boolean?
+  privacy      String
+  roomId       String   @db.ObjectId
+  thumbnailUrl String
+  title        String
+  updatedAt    DateTime @db.Date
+  uploadedBy   String   @db.ObjectId
+  videoUrl     String
 }
 
-enum MessageType {
-  text
-  image
-  video
-  audio
-  file
+model rooms {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  allowFileSharing Boolean
+  allowVideo       Boolean
+  category         String
+  createdAt        DateTime @db.Date
+  description      String
+  isActive         Boolean
+  isPrivate        Boolean?
+  lastActivity     DateTime @db.Date
+  maxUsers         BigInt
+  name             String
+  ownerId          String   @db.ObjectId
+  privacy          String
+  requireApproval  Boolean
+  roomId           String   @unique
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  tags             Json?
+  updatedAt        DateTime @db.Date
 }
 
-enum FriendshipStatus {
-  pending
-  accepted
-  rejected
-}
-
-enum NotificationType {
-  friend_request
-  friend_accepted
-  friend_rejected
-  room_invitation
-  video_upload
-  room_created
-  payment_success
-  system_alert
-}
-
-enum PaymentType {
-  coin_transfer
-  vip_purchase
-  room_creation
-  wallet_topup
-  custom
-}
-
-enum PaymentStatus {
-  pending
-  successful
-  failed
-  cancelled
-}
-
-enum ModerationAction {
-  warn
-  mute
-  kick
-  ban
-  delete_message
-  delete_room
-}
-
-enum TargetType {
-  user
-  message
-  room
-  video
-}
-
-enum VideoPrivacy {
-  public
-  private
-  friends_only
-}
-
-enum RoomPrivacy {
-  public
-  private
-  friends_only
+model users {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  coins        BigInt
+  createdAt    DateTime @db.Date
+  displayName  String
+  email        String   @unique
+  isOnline     Boolean
+  lastSeen     DateTime @db.Date
+  level        BigInt
+  passwordHash String
+  role         String
+  updatedAt    DateTime @db.Date
+  username     String   @unique
+  vipLifetime  Boolean
+  xp           BigInt
 }

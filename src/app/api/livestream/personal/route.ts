@@ -5,20 +5,39 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== Personal Livestream API Called ===')
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+    console.log('Request method:', request.method)
+    console.log('Request URL:', request.url)
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
+      console.error('No session or user ID found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    console.log('User authenticated:', session.user.id)
+    
+    let body
+    try {
+      body = await request.json()
+      console.log('Request body parsed successfully:', body)
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError)
+      return NextResponse.json({ 
+        error: 'Invalid JSON in request body',
+        details: parseError instanceof Error ? parseError.message : 'Unknown parse error'
+      }, { status: 400 })
+    }
+
     const { privacy, title, description } = body
 
-    console.log('Personal livestream request:', { 
+    console.log('Extracted fields:', { 
       userId: session.user.id, 
       privacy, 
       title, 
       description,
-      body 
+      bodyKeys: Object.keys(body)
     })
 
     if (!privacy || !['public', 'friends-only'].includes(privacy)) {
@@ -31,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is already live
-    const existingStream = await prisma.personalLivestream.findFirst({
+    const existingStream = await prisma.personal_livestreams.findFirst({
       where: {
         streamerId: session.user.id,
         isLive: true
@@ -43,8 +62,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'You are already live streaming' }, { status: 400 })
     }
 
+    console.log('Creating new personal livestream...')
+    
     // Create new personal livestream
-    const livestream = await prisma.personalLivestream.create({
+    const livestream = await prisma.personal_livestreams.create({
       data: {
         streamerId: session.user.id,
         title: title || `${session.user.displayName || session.user.username}'s Stream`,
@@ -86,16 +107,16 @@ export async function PUT(request: NextRequest) {
 
     if (action === 'stop') {
       // Stop the user's livestream
-      const livestream = await prisma.personalLivestream.updateMany({
-        where: {
-          streamerId: session.user.id,
-          isLive: true
-        },
-        data: {
-          isLive: false,
-          endedAt: new Date()
-        }
-      })
+          const livestream = await prisma.personal_livestreams.updateMany({
+      where: {
+        streamerId: session.user.id,
+        isLive: true
+      },
+      data: {
+        isLive: false,
+        endedAt: new Date()
+      }
+    })
 
       return NextResponse.json({ success: true })
     }
@@ -119,7 +140,7 @@ export async function GET(request: NextRequest) {
 
     if (type === 'discover') {
       // Get all public livestreams
-      const livestreams = await prisma.personalLivestream.findMany({
+      const livestreams = await prisma.personal_livestreams.findMany({
         where: {
           isLive: true,
           privacy: 'public'
@@ -158,7 +179,7 @@ export async function GET(request: NextRequest) {
         f.userId === session.user.id ? f.friendId : f.userId
       )
 
-      const livestreams = await prisma.personalLivestream.findMany({
+      const livestreams = await prisma.personal_livestreams.findMany({
         where: {
           streamerId: { in: friendIds },
           isLive: true
@@ -179,7 +200,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ livestreams })
     } else if (type === 'me') {
-      const livestreams = await prisma.personalLivestream.findMany({
+      const livestreams = await prisma.personal_livestreams.findMany({
         where: {
           streamerId: session.user.id,
           isLive: true
