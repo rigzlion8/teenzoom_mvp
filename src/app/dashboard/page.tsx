@@ -291,7 +291,7 @@ export default function DashboardPage() {
         {/* Quick Actions Buttons */}
         <div className="mb-6 sm:mb-8">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">More Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <GoLiveDialog>
               <Button 
                 className="bg-green-600 hover:bg-green-700 text-sm sm:text-base py-2 sm:py-3 w-full"
@@ -331,14 +331,6 @@ export default function DashboardPage() {
             >
               <User className="w-4 h-4 mr-2" />
               View Profile
-            </Button>
-            <Button 
-              onClick={() => router.push("/settings")}
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3 w-full"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
             </Button>
           </div>
         </div>

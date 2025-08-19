@@ -11,10 +11,15 @@ import {
   Star, 
   Trophy,
   User,
-  Edit,
-  ArrowLeft
+  ArrowLeft,
+  Bell,
+  Shield,
+  Palette
 } from "lucide-react"
 import Link from "next/link"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 
 interface UserStats {
   coins: number
@@ -171,17 +176,123 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Profile Actions */}
+        {/* Settings Section - Replacing Profile Actions */}
         <div className="mb-8">
-          <h3 className="text-2xl font-bold text-white mb-6 text-center">Profile Actions</h3>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              onClick={() => router.push("/settings")}
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-3"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Profile
-            </Button>
+          <h3 className="text-2xl font-bold text-white mb-6 text-center">Settings</h3>
+          <div className="grid gap-6 max-w-4xl mx-auto">
+            {/* Profile Settings */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Profile Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    value={session.user.username}
+                    disabled
+                    className="bg-white/20 border-white/30 text-white"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    value={session.user.displayName || 'Not set'}
+                    disabled
+                    className="bg-white/20 border-white/30 text-white"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={session.user.email || 'Not set'}
+                    disabled
+                    className="bg-white/20 border-white/30 text-white"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notification Settings */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Email Notifications</Label>
+                    <p className="text-sm text-gray-300">Receive email updates</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Push Notifications</Label>
+                    <p className="text-sm text-gray-300">Receive push notifications</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Privacy Settings */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Privacy & Security
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Profile Visibility</Label>
+                    <p className="text-sm text-gray-300">Make profile public</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Online Status</Label>
+                    <p className="text-sm text-gray-300">Show when online</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Theme Settings */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Appearance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Dark Mode</Label>
+                    <p className="text-sm text-gray-300">Use dark theme</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Navigation Button */}
+          <div className="flex justify-center mt-8">
             <Button 
               onClick={() => router.push("/dashboard")}
               variant="outline" 
