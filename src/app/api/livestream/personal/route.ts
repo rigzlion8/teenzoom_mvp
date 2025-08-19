@@ -58,8 +58,18 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingStream) {
-      console.error('User already streaming:', session.user.id)
-      return NextResponse.json({ error: 'You are already live streaming' }, { status: 400 })
+      console.log('Found existing live stream, cleaning up stale record...')
+      
+      // Clean up the stale stream by marking it as ended
+      await prisma.personalLivestream.update({
+        where: { id: existingStream.id },
+        data: {
+          isLive: false,
+          endedAt: new Date()
+        }
+      })
+      
+      console.log('Stale stream cleaned up, proceeding with new stream...')
     }
 
     console.log('Creating new personal livestream...')
