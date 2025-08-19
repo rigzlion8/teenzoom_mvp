@@ -245,12 +245,15 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       const { livestream } = await response.json()
       currentStreamIdRef.current = livestream.id
 
+      // Generate deterministic channel name (same for streamer and viewers)
+      const channelName = `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`
+      
       // Get token from API
       const tokenResponse = await fetch('/api/livestream/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+          channelName: channelName,
           role: 'host',
           uid: session.user.id
         })
@@ -265,7 +268,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Join channel
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+        channelName,
         token,
         session.user.id
       )
@@ -290,7 +293,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         streamerName: session.user.displayName || session.user.username || 'Unknown',
         title: livestream.title,
         privacy: livestream.privacy,
-        channelName: `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`
+        channelName: channelName
       })
 
     } catch (error) {
@@ -352,12 +355,15 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
     if (!agoraClientRef.current || !session?.user || typeof window === 'undefined') return
 
     try {
+      // Generate deterministic channel name (same format as streamer)
+      const actualChannelName = `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`
+      
       // Get token from API
       const response = await fetch('/api/livestream/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channelName: `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}`,
+          channelName: actualChannelName,
           role: 'audience',
           uid: session.user.id
         })
@@ -372,7 +378,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Join channel as audience
       await agoraClientRef.current.join(
         process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-        `personal_${streamerId.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}`,
+        actualChannelName,
         token,
         session.user.id
       )
