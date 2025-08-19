@@ -115,9 +115,15 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send video upload notifications:', notificationError)
     }
 
+    // Convert BigInt values to numbers for JSON serialization
+    const serializedVideo = {
+      ...videoRecord,
+      duration: Number(videoRecord.duration)
+    }
+
     return NextResponse.json({
       message: 'Video uploaded successfully',
-      video: videoRecord
+      video: serializedVideo
     })
   } catch (error) {
     console.error('Error uploading video:', error)
