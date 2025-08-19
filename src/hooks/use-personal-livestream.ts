@@ -240,6 +240,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       localTracksRef.current = { audio: audioTrack, video: videoTrack }
 
       // Create personal livestream record
+      console.log('🔄 Creating livestream record...')
       const response = await fetch('/api/livestream/personal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -247,10 +248,13 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create livestream')
+        const errorText = await response.text()
+        console.error('❌ Failed to create livestream:', response.status, errorText)
+        throw new Error(`Failed to create livestream: ${response.status} ${errorText}`)
       }
 
       const { livestream } = await response.json()
+      console.log('✅ Livestream created successfully:', livestream.id)
       currentStreamIdRef.current = livestream.id
 
       // Generate deterministic channel name (same for streamer and viewers)
@@ -343,13 +347,21 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       // Start heartbeat to keep stream alive
       const heartbeatInterval = setInterval(async () => {
         try {
-          await fetch('/api/livestream/personal/heartbeat', {
+          console.log('💓 Sending heartbeat for stream:', livestream.id)
+          const heartbeatResponse = await fetch('/api/livestream/personal/heartbeat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ streamId: livestream.id })
           })
+          
+          if (!heartbeatResponse.ok) {
+            const errorText = await heartbeatResponse.text()
+            console.error('❌ Heartbeat failed:', heartbeatResponse.status, errorText)
+          } else {
+            console.log('✅ Heartbeat successful')
+          }
         } catch (error) {
-          console.error('Heartbeat failed:', error)
+          console.error('❌ Heartbeat failed:', error)
         }
       }, 30000) // Every 30 seconds
 
