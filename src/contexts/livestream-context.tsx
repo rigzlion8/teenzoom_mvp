@@ -19,9 +19,9 @@ interface LivestreamState {
 }
 
 interface RemoteUserEntry {
-  uid: number
-  videoTrack?: unknown
-  audioTrack?: unknown
+  uid: string | number
+  videoTrack?: ICameraVideoTrack | null
+  audioTrack?: IMicrophoneAudioTrack | null
 }
 
 interface LivestreamContextType {

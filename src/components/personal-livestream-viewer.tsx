@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Video, Users, X, Volume2 } from 'lucide-react'
-import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
+import { Video, Users, X, Volume2, VolumeX } from 'lucide-react'
+import { useLivestreamContext } from '@/contexts/livestream-context'
 import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
 
 interface PersonalLivestreamViewerProps {
@@ -21,7 +21,7 @@ export function PersonalLivestreamViewer({ onClose }: PersonalLivestreamViewerPr
     viewerCount,
     remoteUsers,
     leaveStream
-  } = usePersonalLivestream()
+  } = useLivestreamContext()
 
   const handleLeaveStream = async () => {
     try {

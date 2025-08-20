@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Video, Globe, Lock, Eye } from 'lucide-react'
-import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
+import { useLivestreamContext } from '@/contexts/livestream-context'
 import { useToast } from '@/hooks/use-toast'
 
 interface LiveStream {
@@ -39,9 +39,9 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
     isViewing,
     streamerId: currentStreamerId,
     connectionStatus
-  } = usePersonalLivestream()
+  } = useLivestreamContext()
 
-  const loadLiveStreams = useCallback(async () => {
+  const loadLiveStreams = async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/livestream/personal?type=${type}`)
@@ -62,13 +62,13 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
     } finally {
       setIsLoading(false)
     }
-  }, [type, toast])
+  }
 
-  const refreshStreams = useCallback(async () => {
+  const refreshStreams = async () => {
     setRefreshing(true)
     await loadLiveStreams()
     setRefreshing(false)
-  }, [loadLiveStreams])
+  }
 
   useEffect(() => {
     loadLiveStreams()
