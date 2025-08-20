@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw, Zap, ZapOff } from 'lucide-react'
+import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw, Zap, ZapOff, RotateCcw } from 'lucide-react'
 import { useLivestreamContext } from '@/contexts/livestream-context'
 import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
 
@@ -14,6 +14,7 @@ interface PersonalLivestreamStreamerProps {
 
 export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStreamerProps) {
   const [isFlashOn, setIsFlashOn] = useState(false)
+  const [isFrontCamera, setIsFrontCamera] = useState(true)
   
   const {
     isStreaming,
@@ -25,7 +26,8 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
     connectionStatus,
     stopStream,
     toggleVideo,
-    toggleAudio
+    toggleAudio,
+    switchCamera
   } = useLivestreamContext()
 
   const handleStopStream = async () => {
@@ -56,7 +58,7 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
           } else {
             console.log('Flash not supported on this device')
             // Fallback: show a message to user
-            alert('Flash is not supported on this device')
+            alert('Flash not supported on this device')
           }
         }
         
@@ -68,6 +70,8 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
       alert('Failed to toggle flash. Please check camera permissions.')
     }
   }
+
+
 
   if (!isStreaming) {
     return null
@@ -178,6 +182,18 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
                     <span className="hidden sm:inline">Flash</span>
                   </>
                 )}
+              </Button>
+
+              {/* Camera Switch Button - Mobile Only */}
+              <Button
+                onClick={switchCamera}
+                variant="outline"
+                size="sm"
+                className="text-white border-white/30 hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3 bg-blue-500/20 md:hidden"
+                title="Switch Camera"
+              >
+                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Switch</span>
               </Button>
             </div>
             

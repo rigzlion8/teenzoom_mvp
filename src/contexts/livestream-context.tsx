@@ -61,6 +61,7 @@ interface LivestreamContextType {
   localTracks: any
   toggleVideo: () => void
   toggleAudio: () => void
+  switchCamera: () => Promise<void>
   startStream: (privacy: 'public' | 'friends-only', title?: string, description?: string) => Promise<void>
   stopStream: () => Promise<void>
   joinStream: (streamerId: string) => Promise<void>
@@ -355,6 +356,56 @@ export function LivestreamProvider({ children }: { children: ReactNode }) {
     }
   }, [localTracks])
 
+  const switchCamera = useCallback(async () => {
+    try {
+      if (!localTracks.video) {
+        console.log('No video track available')
+        return
+      }
+
+      // Get available video devices
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoDevices = devices.filter(device => device.kind === 'videoinput')
+      
+      if (videoDevices.length < 2) {
+        alert('Only one camera available on this device')
+        return
+      }
+
+      // Find current camera and switch to the other one
+      const currentDeviceId = localTracks.video.getSettings().deviceId
+      const otherDevice = videoDevices.find(device => device.deviceId !== currentDeviceId)
+      
+      if (!otherDevice) {
+        alert('No other camera found')
+        return
+      }
+
+      // Stop current video track
+      localTracks.video.stop()
+      
+      // Create new video track with the other camera
+      const AgoraRTC = await import('agora-rtc-sdk-ng')
+      const newVideoTrack = await AgoraRTC.default.createCameraVideoTrack({
+        cameraId: otherDevice.deviceId
+      })
+      
+      // Replace the video track
+      setLocalTracks((prev: any) => ({ ...prev, video: newVideoTrack }))
+      
+      // If we have an Agora client and are streaming, publish the new track
+      if (agoraClientRef.current && currentStreamIdRef.current) {
+        await agoraClientRef.current.publish(newVideoTrack)
+      }
+      
+      console.log('Camera switched successfully')
+      
+    } catch (error) {
+      console.error('Failed to switch camera:', error)
+      alert('Failed to switch camera. Please check camera permissions.')
+    }
+  }, [localTracks.video])
+
   const contextValue: LivestreamContextType = {
     state, setState, updateState,
     isStreaming: state.isStreaming, setIsStreaming,
@@ -370,7 +421,7 @@ export function LivestreamProvider({ children }: { children: ReactNode }) {
     remoteUsers: state.remoteUsers, setRemoteUsers,
     currentStreamId: state.currentStreamId, setCurrentStreamId,
     startStream, stopStream, joinStream, leaveStream,
-    localTracks, toggleVideo, toggleAudio,
+    localTracks, toggleVideo, toggleAudio, switchCamera,
   }
 
   return (
