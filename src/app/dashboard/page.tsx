@@ -26,7 +26,7 @@ import { GoLiveDialog } from '@/components/go-live-dialog'
 import { LiveStreamsDisplay } from '@/components/live-streams-display'
 import { PersonalLivestreamViewer } from '@/components/personal-livestream-viewer'
 import { PersonalLivestreamStreamer } from '@/components/personal-livestream-streamer'
-import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
+import { useLivestreamContext } from '@/contexts/livestream-context'
 import Link from "next/link"
 
 interface UserStats {
@@ -47,29 +47,29 @@ export default function DashboardPage() {
     viewerCount: number
   } | null>(null)
 
-  // Use the personal livestream hook to get real-time state
+  // Use the livestream context to get real-time state
   const {
-    isStreaming: hookIsStreaming,
-    isViewing: hookIsViewing,
+    isStreaming,
+    isViewing,
     title: streamTitle,
     privacy: streamPrivacy,
     viewerCount: streamViewerCount,
     connectionStatus
-  } = usePersonalLivestream()
+  } = useLivestreamContext()
 
   // Debug hook values immediately after destructuring
-  console.log('🔍 Hook values right after destructuring:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
+  console.log('🔍 Hook values right after destructuring:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
 
   // Force re-render when hook state changes
   const [forceUpdate, setForceUpdate] = useState(0)
   
   useEffect(() => {
-    console.log('🔄 Force update triggered:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
+    console.log('🔄 Force update triggered:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
     setForceUpdate(prev => prev + 1)
-  }, [hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus])
+  }, [isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus])
 
   // Log every render
-  console.log('🔄 Dashboard component rendered:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus, forceUpdate })
+  console.log('🔄 Dashboard component rendered:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus, forceUpdate })
 
   // Debug connection status
   useEffect(() => {
@@ -78,8 +78,8 @@ export default function DashboardPage() {
 
   // Debug streaming state
   useEffect(() => {
-    console.log('🔍 Dashboard streaming state:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount })
-  }, [hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount])
+    console.log('🔍 Dashboard streaming state:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount })
+  }, [isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount])
 
   const checkCurrentStream = useCallback(async () => {
     try {
@@ -108,16 +108,16 @@ export default function DashboardPage() {
 
   // Update current stream info when hook state changes
   useEffect(() => {
-    if (hookIsStreaming && streamTitle) {
+    if (isStreaming && streamTitle) {
       setCurrentStream({
         title: streamTitle,
         privacy: streamPrivacy || 'public',
         viewerCount: streamViewerCount
       })
-    } else if (!hookIsStreaming) {
+    } else if (!isStreaming) {
       setCurrentStream(null)
     }
-  }, [hookIsStreaming, streamTitle, streamPrivacy, streamViewerCount])
+  }, [isStreaming, streamTitle, streamPrivacy, streamViewerCount])
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -223,7 +223,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Current Stream Info */}
-        {hookIsStreaming && currentStream && (
+        {isStreaming && currentStream && (
           <div className="mb-6 sm:mb-8">
             <Card className="bg-green-900/20 backdrop-blur-sm border-green-500/30">
               <CardContent className="p-4 sm:p-6">
@@ -351,7 +351,7 @@ export default function DashboardPage() {
             <GoLiveDialog connectionStatus={connectionStatus}>
               <Button 
                 className={`text-sm sm:text-base py-2 sm:py-3 w-full ${
-                  hookIsStreaming 
+                  isStreaming 
                     ? 'bg-green-600 hover:bg-green-700' 
                     : connectionStatus === 'connecting'
                     ? 'bg-yellow-600 hover:bg-yellow-700'
@@ -359,10 +359,10 @@ export default function DashboardPage() {
                     ? 'bg-red-600 hover:bg-red-700'
                     : 'bg-green-600 hover:bg-green-700'
                 }`}
-                disabled={hookIsStreaming || connectionStatus === 'connecting'}
+                disabled={isStreaming || connectionStatus === 'connecting'}
               >
                 <Video className="w-4 h-4 mr-2" />
-                {hookIsStreaming 
+                {isStreaming 
                   ? 'Already Live' 
                   : connectionStatus === 'connecting'
                   ? 'Connecting...'
@@ -433,10 +433,10 @@ export default function DashboardPage() {
 
         {/* Personal Livestream Components */}
         {(() => {
-          console.log('🔍 About to render livestream components:', { hookIsStreaming, hookIsViewing, forceUpdate })
-          return hookIsStreaming ? (
+          console.log('🔍 About to render livestream components:', { isStreaming, isViewing, forceUpdate })
+          return isStreaming ? (
             <PersonalLivestreamStreamer onClose={() => {}} />
-          ) : hookIsViewing ? (
+          ) : isViewing ? (
             <PersonalLivestreamViewer onClose={() => {}} />
           ) : null
         })()}

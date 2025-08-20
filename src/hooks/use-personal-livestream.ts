@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSocket } from './use-socket'
+import { useSocket } from '@/hooks/use-socket'
+import { useLivestreamContext } from '@/contexts/livestream-context'
 
 // Type definitions for Agora (no runtime imports)
 interface IAgoraRTCClient {
@@ -35,11 +36,11 @@ interface IMicrophoneAudioTrack {
 }
 
 interface IRemoteVideoTrack {
-  play: (element?: HTMLElement) => void
+  // Placeholder interface
 }
 
 interface IRemoteAudioTrack {
-  play: (element?: HTMLElement) => void
+  // Placeholder interface
 }
 
 // Type for the AgoraRTC module
@@ -49,7 +50,8 @@ interface AgoraRTCModule {
   createCameraVideoTrack: () => Promise<ICameraVideoTrack>
 }
 
-export interface PersonalLivestreamState {
+// Livestream state interface
+interface PersonalLivestreamState {
   isLive: boolean
   isStreaming: boolean
   isViewing: boolean
@@ -59,22 +61,22 @@ export interface PersonalLivestreamState {
   description: string | null
   privacy: 'public' | 'friends-only' | null
   viewerCount: number
+  remoteUsers: RemoteUserEntry[]
+  connectionStatus: 'idle' | 'connecting' | 'connected' | 'failed'
+}
+
+// Return type for the hook
+export interface UsePersonalLivestreamReturn extends PersonalLivestreamState {
   localTracks: {
     video: ICameraVideoTrack | null
     audio: IMicrophoneAudioTrack | null
   }
-  remoteUsers: RemoteUserEntry[]
-}
-
-export interface UsePersonalLivestreamReturn extends PersonalLivestreamState {
   startStream: (privacy: 'public' | 'friends-only', title?: string, description?: string) => Promise<void>
   stopStream: () => Promise<void>
   joinStream: (streamerId: string) => Promise<void>
   leaveStream: () => Promise<void>
-  toggleVideo: () => Promise<void>
-  toggleAudio: () => Promise<void>
-  setVideoQuality: (quality: 'low' | 'medium' | 'high') => void
-  connectionStatus: 'idle' | 'connecting' | 'connected' | 'failed'
+  toggleVideo: () => void
+  toggleAudio: () => void
 }
 
 type RemoteUserEntry = {
@@ -86,6 +88,32 @@ type RemoteUserEntry = {
 export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
   const { data: session } = useSession()
   const { socket, isConnected } = useSocket('personal-livestream')
+  const {
+    isLive,
+    setIsLive,
+    isStreaming,
+    setIsStreaming,
+    isViewing,
+    setIsViewing,
+    streamerId,
+    setStreamerId,
+    streamerName,
+    setStreamerName,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    privacy,
+    setPrivacy,
+    viewerCount,
+    setViewerCount,
+    remoteUsers,
+    setRemoteUsers,
+    connectionStatus,
+    setConnectionStatus,
+    currentStreamId,
+    setCurrentStreamId,
+  } = useLivestreamContext()
   
   // Agora client and state
   const [, setAgoraClient] = useState<IAgoraRTCClient | null>(null)
@@ -93,19 +121,6 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
     video: ICameraVideoTrack | null
     audio: IMicrophoneAudioTrack | null
   }>({ video: null, audio: null })
-  
-  // Livestream state
-  const [isLive, setIsLive] = useState(false)
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [isViewing, setIsViewing] = useState(false)
-  const [streamerId, setStreamerId] = useState<string | null>(null)
-  const [streamerName, setStreamerName] = useState<string | null>(null)
-  const [title, setTitle] = useState<string | null>(null)
-  const [description, setDescription] = useState<string | null>(null)
-  const [privacy, setPrivacy] = useState<'public' | 'friends-only' | null>(null)
-  const [viewerCount, setViewerCount] = useState(0)
-  const [remoteUsers, setRemoteUsers] = useState<RemoteUserEntry[]>([])
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle')
   
   // Refs
   const agoraClientRef = useRef<IAgoraRTCClient | null>(null)
@@ -119,20 +134,20 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       await agoraClientRef.current?.subscribe(user, mediaType)
       
       if (mediaType === 'video') {
-        setRemoteUsers(prev => {
-          const existing = prev.find(u => u.uid === user.uid)
+        setRemoteUsers((prev: RemoteUserEntry[]) => {
+          const existing = prev.find((u: RemoteUserEntry) => u.uid === user.uid)
           if (existing) {
-            return prev.map(u => u.uid === user.uid ? { ...u, videoTrack: user.videoTrack || undefined } : u)
+            return prev.map((u: RemoteUserEntry) => u.uid === user.uid ? { ...u, videoTrack: user.videoTrack || undefined } : u)
           }
           return [...prev, { uid: user.uid, videoTrack: user.videoTrack || undefined }]
         })
       }
       
       if (mediaType === 'audio') {
-        setRemoteUsers(prev => {
-          const existing = prev.find(u => u.uid === user.uid)
+        setRemoteUsers((prev: RemoteUserEntry[]) => {
+          const existing = prev.find((u: RemoteUserEntry) => u.uid === user.uid)
           if (existing) {
-            return prev.map(u => u.uid === user.uid ? { ...u, audioTrack: user.audioTrack || undefined } : u)
+            return prev.map((u: RemoteUserEntry) => u.uid === user.uid ? { ...u, audioTrack: user.audioTrack || undefined } : u)
           }
           return [...prev, { uid: user.uid, audioTrack: user.audioTrack || undefined }]
         })
@@ -144,22 +159,22 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
   const handleUserUnpublished = useCallback((user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
     if (mediaType === 'video') {
-      setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, videoTrack: undefined } : u))
+      setRemoteUsers((prev: RemoteUserEntry[]) => prev.map((u: RemoteUserEntry) => u.uid === user.uid ? { ...u, videoTrack: undefined } : u))
     }
     if (mediaType === 'audio') {
-      setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, audioTrack: undefined } : u))
+      setRemoteUsers((prev: RemoteUserEntry[]) => prev.map((u: RemoteUserEntry) => u.uid === user.uid ? { ...u, audioTrack: undefined } : u))
     }
   }, [])
 
   const handleUserJoined = useCallback((user: IAgoraRTCRemoteUser) => {
-    setRemoteUsers(prev => {
-      const exists = prev.some(u => u.uid === user.uid)
+    setRemoteUsers((prev: RemoteUserEntry[]) => {
+      const exists = prev.some((u: RemoteUserEntry) => u.uid === user.uid)
       return exists ? prev : [...prev, { uid: user.uid }]
     })
   }, [])
 
   const handleUserLeft = useCallback((user: IAgoraRTCRemoteUser) => {
-    setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid))
+    setRemoteUsers((prev: RemoteUserEntry[]) => prev.filter((u: RemoteUserEntry) => u.uid !== user.uid))
   }, [])
 
   // Debug state changes
@@ -260,7 +275,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
 
       const { livestream } = await response.json()
       console.log('✅ Livestream created successfully:', livestream.id)
-      currentStreamIdRef.current = livestream.id
+      setCurrentStreamId(livestream.id)
 
       // Generate deterministic channel name (same for streamer and viewers)
       const channelName = `personal_${session.user.id.replace(/[^a-zA-Z0-9]/g, '')}`
@@ -442,7 +457,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       setPrivacy(null)
       setViewerCount(0)
       setRemoteUsers([])
-      currentStreamIdRef.current = null
+      setCurrentStreamId(null)
 
       // Notify others via Socket.IO
       socket?.emit('personal_livestream_ended', { streamId: currentStreamIdRef.current })

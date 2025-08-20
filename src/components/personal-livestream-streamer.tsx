@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw } from 'lucide-react'
-import { usePersonalLivestream } from '@/hooks/use-personal-livestream'
+import { useLivestreamContext } from '@/contexts/livestream-context'
 import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
 
 interface PersonalLivestreamStreamerProps {
@@ -23,7 +23,7 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
     stopStream,
     toggleVideo,
     toggleAudio
-  } = usePersonalLivestream()
+  } = useLivestreamContext()
 
   const handleStopStream = async () => {
     try {

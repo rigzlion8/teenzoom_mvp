@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/providers/auth-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import Navigation from '@/components/navigation'
+import { LivestreamProvider } from "@/contexts/livestream-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,9 +32,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Navigation />
-            {children}
-            <Toaster />
+            <LivestreamProvider>
+              <Navigation />
+              {children}
+              <Toaster />
+            </LivestreamProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
