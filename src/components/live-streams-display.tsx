@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,18 +11,19 @@ import { useToast } from '@/hooks/use-toast'
 interface LiveStream {
   id: string
   title: string
-  description?: string
+  description: string
   privacy: 'public' | 'friends-only'
   startedAt: string
   streamer: {
     id: string
-    username: string
     displayName: string
+    username: string
   }
+  viewerCount: number
 }
 
 interface LiveStreamsDisplayProps {
-  type: 'discover' | 'friends'
+  type: 'public' | 'friends-only'
   title: string
   description: string
 }
@@ -41,7 +42,12 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
     connectionStatus
   } = useLivestreamContext()
 
-  const loadLiveStreams = async () => {
+  const loadLiveStreams = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoading) {
+      return
+    }
+    
     try {
       setIsLoading(true)
       const response = await fetch(`/api/livestream/personal?type=${type}`)
@@ -62,21 +68,29 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [type, isLoading])
 
-  const refreshStreams = async () => {
+  const refreshStreams = useCallback(async () => {
     setRefreshing(true)
     await loadLiveStreams()
     setRefreshing(false)
-  }
+  }, [loadLiveStreams])
 
   useEffect(() => {
-    loadLiveStreams()
+    // Only load if not already loading
+    if (!isLoading) {
+      loadLiveStreams()
+    }
     
     // Refresh every 30 seconds
-    const interval = setInterval(loadLiveStreams, 30000)
+    const interval = setInterval(() => {
+      if (!isLoading) {
+        loadLiveStreams()
+      }
+    }, 30000)
+    
     return () => clearInterval(interval)
-  }, [loadLiveStreams])
+  }, [loadLiveStreams, isLoading])
 
   const handleJoinStream = async (stream: LiveStream) => {
     try {
@@ -163,7 +177,7 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
             <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No live streams at the moment</p>
             <p className="text-sm text-gray-400 mt-1">
-              {type === 'discover' 
+              {type === 'public' 
                 ? 'Check back later for public streams'
                 : 'Your friends are not currently live'
               }

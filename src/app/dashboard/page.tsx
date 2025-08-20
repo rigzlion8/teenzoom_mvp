@@ -412,14 +412,14 @@ export default function DashboardPage() {
           <div className="grid gap-6">
             {/* Friends' Live Streams */}
             <LiveStreamsDisplay
-              type="friends"
+              type="friends-only"
               title="Friends Live"
               description="Watch streams from your friends"
             />
             
             {/* Public Live Streams */}
             <LiveStreamsDisplay
-              type="discover"
+              type="public"
               title="Discover Live"
               description="Find and join public streams from the community"
             />

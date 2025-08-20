@@ -156,9 +156,9 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // 'discover' | 'friends' | 'me' | null
+    const type = searchParams.get('type') // 'public' | 'friends-only' | null
 
-    if (type === 'discover') {
+    if (type === 'public') {
       // Clean up stale streams first (older than 5 minutes without updates)
       const staleThreshold = new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
       
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
       }))
       
       return NextResponse.json({ livestreams: serializedLivestreams })
-    } else if (type === 'friends' || !type) {
+    } else if (type === 'friends-only' || !type) {
       // Clean up stale streams first (older than 5 minutes without updates)
       const staleThreshold = new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
       

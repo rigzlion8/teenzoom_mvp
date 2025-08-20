@@ -77,7 +77,53 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
               <Users className="h-4 w-4" />
               <span>{viewerCount} watching</span>
             </div>
-                              <div className="flex gap-2">
+            
+            {/* Camera and Mic Controls - Moved to top */}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={toggleVideo}
+                variant="outline"
+                size="sm"
+                className={`text-white border-white/30 hover:bg-white/10 ${
+                  localTracks.video?.enabled ? 'bg-green-500/20' : 'bg-red-500/20'
+                }`}
+              >
+                {localTracks.video?.enabled ? (
+                  <>
+                    <Video className="h-4 w-4 mr-2" />
+                    Camera
+                  </>
+                ) : (
+                  <>
+                    <VideoOff className="h-4 w-4 mr-2" />
+                    Camera
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={toggleAudio}
+                variant="outline"
+                size="sm"
+                className={`text-white border-white/30 hover:bg-white/10 ${
+                  localTracks.audio?.enabled ? 'bg-green-500/20' : 'bg-red-500/20'
+                }`}
+              >
+                {localTracks.audio?.enabled ? (
+                  <>
+                    <Mic className="h-4 w-4 mr-2" />
+                    Mic
+                  </>
+                ) : (
+                  <>
+                    <MicOff className="h-4 w-4 mr-2" />
+                    Mic
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            <div className="flex gap-2">
                     {connectionStatus === 'failed' && (
                       <Button
                         onClick={() => window.location.reload()}
@@ -123,50 +169,6 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
 
           {/* Stream Controls */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={toggleVideo}
-                variant="outline"
-                size="sm"
-                className={`text-white border-white/30 hover:bg-white/10 ${
-                  localTracks.video?.enabled ? 'bg-green-500/20' : 'bg-red-500/20'
-                }`}
-              >
-                {localTracks.video?.enabled ? (
-                  <>
-                    <Video className="h-4 w-4 mr-2" />
-                    Camera On
-                  </>
-                ) : (
-                  <>
-                    <VideoOff className="h-4 w-4 mr-2" />
-                    Camera Off
-                  </>
-                )}
-              </Button>
-
-              <Button
-                onClick={toggleAudio}
-                variant="outline"
-                size="sm"
-                className={`text-white border-white/30 hover:bg-white/10 ${
-                  localTracks.audio?.enabled ? 'bg-green-500/20' : 'bg-red-500/20'
-                }`}
-              >
-                {localTracks.audio?.enabled ? (
-                  <>
-                    <Mic className="h-4 w-4 mr-2" />
-                    Mic On
-                  </>
-                ) : (
-                  <>
-                    <MicOff className="h-4 w-4 mr-2" />
-                    Mic Off
-                  </>
-                )}
-              </Button>
-            </div>
-
             <div className="text-white text-sm">
               <p>Streaming to: {privacy === 'friends-only' ? 'Friends Only' : 'Public'}</p>
               <p className="text-gray-300">Viewers: {viewerCount}</p>
