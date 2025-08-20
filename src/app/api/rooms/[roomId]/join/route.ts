@@ -15,9 +15,12 @@ export async function POST(
 
     const { roomId } = await params
 
+    // Clean the roomId - remove "room_" prefix if present
+    const cleanRoomId = roomId.startsWith('room_') ? roomId.substring(5) : roomId
+
     // Check if room exists
     const room = await prisma.room.findUnique({
-      where: { id: roomId },
+      where: { id: cleanRoomId },
       select: { id: true, name: true, maxUsers: true }
     })
 
@@ -30,7 +33,7 @@ export async function POST(
       where: {
         userId_roomId: {
           userId: session.user.id,
-          roomId: roomId
+          roomId: cleanRoomId
         }
       }
     })
@@ -41,7 +44,7 @@ export async function POST(
 
     // Check if room is full
     const memberCount = await prisma.roomMember.count({
-      where: { roomId: roomId }
+      where: { roomId: cleanRoomId }
     })
 
     if (memberCount >= room.maxUsers) {
@@ -52,7 +55,7 @@ export async function POST(
     await prisma.roomMember.create({
       data: {
         userId: session.user.id,
-        roomId: roomId,
+        roomId: cleanRoomId,
         role: 'member',
         isActive: true,
         joinedAt: new Date(),

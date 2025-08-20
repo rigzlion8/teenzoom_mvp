@@ -15,9 +15,12 @@ export async function GET(
 
     const { roomId } = await params
 
+    // Clean the roomId - remove "room_" prefix if present
+    const cleanRoomId = roomId.startsWith('room_') ? roomId.substring(5) : roomId
+
     // Get room information
     const room = await prisma.room.findUnique({
-      where: { id: roomId },
+      where: { id: cleanRoomId },
       include: {
         members: {
           select: {

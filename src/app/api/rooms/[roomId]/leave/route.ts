@@ -15,12 +15,15 @@ export async function POST(
 
     const { roomId } = await params
 
+    // Clean the roomId - remove "room_" prefix if present
+    const cleanRoomId = roomId.startsWith('room_') ? roomId.substring(5) : roomId
+
     // Check if user is a member
     const member = await prisma.roomMember.findUnique({
       where: {
         userId_roomId: {
           userId: session.user.id,
-          roomId: roomId
+          roomId: cleanRoomId
         }
       }
     })
@@ -34,7 +37,7 @@ export async function POST(
       where: {
         userId_roomId: {
           userId: session.user.id,
-          roomId: roomId
+          roomId: cleanRoomId
         }
       }
     })
