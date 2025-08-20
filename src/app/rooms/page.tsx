@@ -201,17 +201,7 @@ export default function RoomsPage() {
         <p className="text-muted-foreground text-center">Join exciting conversations and meet new friends</p>
       </div>
 
-      {/* Create Room Button */}
-      {session?.user && (
-        <div className="mb-6 text-center">
-          <Link href="/rooms/create">
-            <Button size="lg" className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Create New Room
-            </Button>
-          </Link>
-        </div>
-      )}
+
 
       {/* Search and Categories */}
       <div className="mb-6">

@@ -37,9 +37,9 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="bg-background border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <nav className="bg-background border-b border-border sticky top-0 z-50 w-full">
+      <div className="container mx-auto px-4 max-w-full">
+        <div className="flex items-center justify-between h-16 min-w-0">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -84,13 +84,6 @@ export default function Navigation() {
           {/* User Menu / Mobile Menu Button */}
           {session?.user ? (
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/rooms/create">
-                <Button size="sm" className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Create Room</span>
-                </Button>
-              </Link>
-              
               <div className="relative group">
                 <Button variant="ghost" className="flex items-center space-x-2">
                   <User className="h-4 w-4" />
@@ -136,8 +129,8 @@ export default function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-border">
-            <div className="py-4 space-y-2">
+          <div className="md:hidden border-t border-border max-h-[calc(100vh-80px)] overflow-y-auto">
+            <div className="py-4 space-y-2 px-4">
               {session?.user ? (
                 <>
                   <Link 
@@ -213,15 +206,6 @@ export default function Navigation() {
                   )}
                   
                   <Link 
-                    href="/rooms/create" 
-                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
-                    onClick={closeMobileMenu}
-                  >
-                    <Plus className="h-4 w-4 inline mr-2" />
-                    Create Room
-                  </Link>
-                  
-                  <Link 
                     href="/settings" 
                     className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
                     onClick={closeMobileMenu}
@@ -232,7 +216,7 @@ export default function Navigation() {
                   
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-4 py-2 text-foreground hover:bg-accent rounded-md"
+                    className="block w-full text-left px-4 py-2 text-foreground hover:bg-accent rounded-md break-words"
                   >
                     <LogOut className="h-4 w-4 inline mr-2" />
                     Sign Out

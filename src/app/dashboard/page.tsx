@@ -361,14 +361,6 @@ export default function DashboardPage() {
               Browse Rooms
             </Button>
             <Button 
-              onClick={() => router.push("/rooms/create")}
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3 w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Room
-            </Button>
-            <Button 
               onClick={() => router.push("/videos")}
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base py-2 sm:py-3 w-full"
