@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw } from 'lucide-react'
+import { Video, Users, X, Mic, MicOff, VideoOff, RefreshCw, Zap, ZapOff } from 'lucide-react'
 import { useLivestreamContext } from '@/contexts/livestream-context'
 import { LivestreamVideoPlayer } from '@/components/ui/livestream-video-player'
 
@@ -12,6 +13,8 @@ interface PersonalLivestreamStreamerProps {
 }
 
 export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStreamerProps) {
+  const [isFlashOn, setIsFlashOn] = useState(false)
+  
   const {
     isStreaming,
     title,
@@ -31,6 +34,38 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
       onClose()
     } catch (error) {
       console.error('Failed to stop stream:', error)
+    }
+  }
+
+  const toggleFlash = async () => {
+    try {
+      if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        const track = stream.getVideoTracks()[0]
+        
+        if (track && 'getCapabilities' in track) {
+          const capabilities = track.getCapabilities() as any
+          
+          if (capabilities.torch) {
+            const newFlashState = !isFlashOn
+            await track.applyConstraints({
+              advanced: [{ torch: newFlashState }] as any
+            })
+            setIsFlashOn(newFlashState)
+            console.log('Flash toggled:', newFlashState)
+          } else {
+            console.log('Flash not supported on this device')
+            // Fallback: show a message to user
+            alert('Flash is not supported on this device')
+          }
+        }
+        
+        // Stop the stream to release the camera
+        stream.getTracks().forEach(track => track.stop())
+      }
+    } catch (error) {
+      console.error('Failed to toggle flash:', error)
+      alert('Failed to toggle flash. Please check camera permissions.')
     }
   }
 
@@ -78,7 +113,7 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
               <span>{viewerCount} watching</span>
             </div>
             
-            {/* Camera and Mic Controls - Moved to top */}
+            {/* Camera, Mic, and Flash Controls - Moved to top */}
             <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 onClick={toggleVideo}
@@ -118,6 +153,29 @@ export function PersonalLivestreamStreamer({ onClose }: PersonalLivestreamStream
                   <>
                     <MicOff className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">Mic</span>
+                  </>
+                )}
+              </Button>
+
+              {/* Flash Control Button */}
+              <Button
+                onClick={toggleFlash}
+                variant="outline"
+                size="sm"
+                className={`text-white border-white/30 hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3 ${
+                  isFlashOn ? 'bg-yellow-500/20' : 'bg-gray-500/20'
+                }`}
+                title="Toggle Flash"
+              >
+                {isFlashOn ? (
+                  <>
+                    <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Flash</span>
+                  </>
+                ) : (
+                  <>
+                    <ZapOff className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Flash</span>
                   </>
                 )}
               </Button>
