@@ -162,6 +162,11 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
     setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid))
   }, [])
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('🔍 State changed - isStreaming:', isStreaming, 'isLive:', isLive, 'title:', title, 'connectionStatus:', connectionStatus)
+  }, [isStreaming, isLive, title, connectionStatus])
+
   // Initialize Agora client
   useEffect(() => {
     if (!session?.user || typeof window === 'undefined') return
@@ -197,7 +202,7 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
         agoraClientRef.current.removeAllListeners()
       }
     }
-  }, [session?.user, handleUserPublished, handleUserUnpublished, handleUserJoined, handleUserLeft])
+  }, [session?.user]) // Remove the event handler dependencies
 
   // Socket.IO event handlers
   const handleViewerJoined = useCallback(() => {
@@ -336,13 +341,21 @@ export const usePersonalLivestream = (): UsePersonalLivestreamReturn => {
       await agoraClientRef.current.publish([audioTrack, videoTrack])
 
       // Update state
+      console.log('🔄 Setting streaming state to true...')
       setIsStreaming(true)
+      console.log('🔄 Setting live state to true...')
       setIsLive(true)
+      console.log('🔄 Setting streamer ID:', session.user.id)
       setStreamerId(session.user.id)
+      console.log('🔄 Setting streamer name:', session.user.displayName || session.user.username || 'Unknown')
       setStreamerName(session.user.displayName || session.user.username || 'Unknown')
+      console.log('🔄 Setting title:', livestream.title)
       setTitle(livestream.title)
+      console.log('🔄 Setting description:', livestream.description)
       setDescription(livestream.description)
+      console.log('🔄 Setting privacy:', livestream.privacy)
       setPrivacy(livestream.privacy)
+      console.log('✅ All state updates completed')
 
       // Start heartbeat to keep stream alive
       const heartbeatInterval = setInterval(async () => {
