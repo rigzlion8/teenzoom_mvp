@@ -64,8 +64,12 @@ export default function DashboardPage() {
   const [forceUpdate, setForceUpdate] = useState(0)
   
   useEffect(() => {
+    console.log('🔄 Force update triggered:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
     setForceUpdate(prev => prev + 1)
   }, [hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus])
+
+  // Log every render
+  console.log('🔄 Dashboard component rendered:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus, forceUpdate })
 
   // Debug connection status
   useEffect(() => {
