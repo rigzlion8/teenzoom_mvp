@@ -18,11 +18,55 @@ export async function POST(
     // Clean the roomId - remove "room_" prefix if present
     const cleanRoomId = roomId.startsWith('room_') ? roomId.substring(5) : roomId
 
-    // Check if room exists
-    const room = await prisma.room.findUnique({
-      where: { id: cleanRoomId },
-      select: { id: true, name: true, maxUsers: true }
-    })
+    let room: any
+
+    // Handle special "general" room case
+    if (cleanRoomId === 'general') {
+      let generalRoom = await prisma.room.findFirst({
+        where: { roomId: 'general' },
+        select: { id: true, name: true, maxUsers: true }
+      })
+
+      if (!generalRoom) {
+        // Create general room if it doesn't exist
+        const adminUser = await prisma.user.findFirst({
+          where: { role: 'admin' }
+        })
+
+        if (!adminUser) {
+          return NextResponse.json({ error: 'No admin user found to create general room' }, { status: 500 })
+        }
+
+        generalRoom = await prisma.room.create({
+          data: {
+            name: 'General Chat',
+            description: 'Welcome to the main general chat room!',
+            category: 'general',
+            privacy: 'public',
+            isActive: true,
+            allowFileSharing: true,
+            allowVideo: true,
+            requireApproval: false,
+            maxUsers: 1000,
+            roomId: 'general',
+            ownerId: adminUser.id,
+            tags: ['general', 'chat', 'main'],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            lastActivity: new Date()
+          }
+        })
+      }
+
+      // Use the general room for the rest of the logic
+      room = generalRoom
+    } else {
+      // Check if room exists for other rooms
+      room = await prisma.room.findUnique({
+        where: { id: cleanRoomId },
+        select: { id: true, name: true, maxUsers: true }
+      })
+    }
 
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
