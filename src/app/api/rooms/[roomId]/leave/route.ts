@@ -57,11 +57,27 @@ export async function POST(
     }
 
     // Check if user is a member for other rooms
+    // First try to find by roomId field (for human-readable names)
+    let targetRoom = await prisma.room.findFirst({
+      where: { roomId: cleanRoomId }
+    })
+
+    // If not found by roomId, try to find by MongoDB ObjectID
+    if (!targetRoom && /^[0-9a-fA-F]{24}$/.test(cleanRoomId)) {
+      targetRoom = await prisma.room.findUnique({
+        where: { id: cleanRoomId }
+      })
+    }
+
+    if (!targetRoom) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
     const member = await prisma.roomMember.findUnique({
       where: {
         userId_roomId: {
           userId: session.user.id,
-          roomId: cleanRoomId
+          roomId: targetRoom.id
         }
       }
     })
@@ -75,7 +91,7 @@ export async function POST(
       where: {
         userId_roomId: {
           userId: session.user.id,
-          roomId: cleanRoomId
+          roomId: targetRoom.id
         }
       }
     })

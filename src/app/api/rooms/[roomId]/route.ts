@@ -117,8 +117,9 @@ export async function GET(
     }
 
     // Get room information for other rooms
-    const room = await prisma.room.findUnique({
-      where: { id: cleanRoomId },
+    // First try to find by roomId field (for human-readable names)
+    let room = await prisma.room.findFirst({
+      where: { roomId: cleanRoomId },
       include: {
         members: {
           select: {
@@ -136,6 +137,29 @@ export async function GET(
         }
       }
     })
+
+    // If not found by roomId, try to find by MongoDB ObjectID
+    if (!room && /^[0-9a-fA-F]{24}$/.test(cleanRoomId)) {
+      room = await prisma.room.findUnique({
+        where: { id: cleanRoomId },
+        include: {
+          members: {
+            select: {
+              userId: true,
+              role: true,
+              joinedAt: true
+            }
+          },
+          owner: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true
+            }
+          }
+        }
+      })
+    }
 
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })

@@ -62,10 +62,19 @@ export async function POST(
       room = generalRoom
     } else {
       // Check if room exists for other rooms
-      room = await prisma.room.findUnique({
-        where: { id: cleanRoomId },
+      // First try to find by roomId field (for human-readable names)
+      room = await prisma.room.findFirst({
+        where: { roomId: cleanRoomId },
         select: { id: true, name: true, maxUsers: true }
       })
+
+      // If not found by roomId, try to find by MongoDB ObjectID
+      if (!room && /^[0-9a-fA-F]{24}$/.test(cleanRoomId)) {
+        room = await prisma.room.findUnique({
+          where: { id: cleanRoomId },
+          select: { id: true, name: true, maxUsers: true }
+        })
+      }
     }
 
     if (!room) {
