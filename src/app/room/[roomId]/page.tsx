@@ -118,11 +118,14 @@ function ChatRoomClient({ roomId, actualRoomId }: { roomId: string; actualRoomId
         setRoomInfo(data.room)
       } else {
         console.error('Failed to fetch room info')
-        // Fallback to basic room info
+        // Fallback to basic room info - use a more user-friendly name
+        const fallbackName = roomId && roomId.length > 0 ? 
+          (roomId.length > 20 ? 'Chat Room' : roomId.charAt(0).toUpperCase() + roomId.slice(1)) : 
+          'Chat Room'
         setRoomInfo({
           id: roomId,
-          name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
-          description: `Welcome to the ${roomId || 'chat'} room!`,
+          name: fallbackName,
+          description: `Welcome to the ${fallbackName} room!`,
           memberCount: 0,
           category: 'general',
           privacy: 'public',
@@ -133,11 +136,14 @@ function ChatRoomClient({ roomId, actualRoomId }: { roomId: string; actualRoomId
       }
     } catch (error) {
       console.error('Error fetching room info:', error)
-      // Fallback to basic room info
+      // Fallback to basic room info - use a more user-friendly name
+      const fallbackName = roomId && roomId.length > 0 ? 
+        (roomId.length > 20 ? 'Chat Room' : roomId.charAt(0).toUpperCase() + roomId.slice(1)) : 
+        'Chat Room'
       setRoomInfo({
         id: roomId,
-        name: roomId && roomId.length > 0 ? roomId.charAt(0).toUpperCase() + roomId.slice(1) : 'Chat Room',
-        description: `Welcome to the ${roomId || 'chat'} room!`,
+        name: fallbackName,
+        description: `Welcome to the ${fallbackName} room!`,
         memberCount: 0,
         category: 'general',
         privacy: 'public',

@@ -73,14 +73,32 @@ export const useSocket = (roomId: string): UseSocketReturn => {
       }
     })
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected')
+    newSocket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason)
       setIsConnected(false)
+      
+      // Attempt to reconnect if it's not a manual disconnect
+      if (reason !== 'io client disconnect') {
+        setTimeout(() => {
+          if (socketRef.current) {
+            console.log('Attempting to reconnect...')
+            socketRef.current.connect()
+          }
+        }, 1000)
+      }
     })
 
     newSocket.on('connect_error', (error) => {
       console.error('Socket connection error:', error)
       setIsConnected(false)
+      
+      // Attempt to reconnect on error
+      setTimeout(() => {
+        if (socketRef.current) {
+          console.log('Attempting to reconnect after error...')
+          socketRef.current.connect()
+        }
+      }, 2000)
     })
 
     // Chat events
@@ -158,7 +176,8 @@ export const useSocket = (roomId: string): UseSocketReturn => {
 
   // Join room when socket is connected and roomId changes
   useEffect(() => {
-    if (socket && roomId) {
+    if (socket && isConnected && roomId) {
+      console.log('Joining room:', roomId, 'with socket:', socket.id)
       socket.emit('join_room', { 
         roomId, 
         userId: session?.user?.id,
@@ -167,14 +186,17 @@ export const useSocket = (roomId: string): UseSocketReturn => {
       })
       
       return () => {
-        socket.emit('leave_room', { 
-          roomId,
-          username: session?.user?.username,
-          displayName: session?.user?.displayName
-        })
+        if (socket && isConnected) {
+          console.log('Leaving room:', roomId)
+          socket.emit('leave_room', { 
+            roomId,
+            username: session?.user?.username,
+            displayName: session?.user?.displayName
+          })
+        }
       }
     }
-  }, [socket, roomId, session?.user?.id, session?.user?.username, session?.user?.displayName])
+  }, [socket, isConnected, roomId, session?.user?.id, session?.user?.username, session?.user?.displayName])
 
   // Cleanup on unmount
   useEffect(() => {

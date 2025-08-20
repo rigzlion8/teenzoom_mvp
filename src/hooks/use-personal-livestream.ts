@@ -48,7 +48,7 @@ export const usePersonalLivestream = () => {
 
     try {
       setConnectionStatus('connecting')
-
+      
       // Create local tracks
       const AgoraRTC = await import('agora-rtc-sdk-ng')
       const [audioTrack, videoTrack] = await AgoraRTC.default.createMicrophoneAndCameraTracks()
