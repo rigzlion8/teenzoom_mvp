@@ -1,7 +1,6 @@
 "use client"
 
 import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-react'
 
 interface LivestreamState {
   isStreaming: boolean
@@ -14,22 +13,14 @@ interface LivestreamState {
   streamerName: string | null
   viewerCount: number
   connectionStatus: 'idle' | 'connecting' | 'connected' | 'failed'
-  remoteUsers: RemoteUserEntry[]
+  remoteUsers: any[]
   currentStreamId: string | null
-}
-
-interface RemoteUserEntry {
-  uid: string | number
-  videoTrack?: ICameraVideoTrack | null
-  audioTrack?: IMicrophoneAudioTrack | null
 }
 
 interface LivestreamContextType {
   state: LivestreamState
   setState: React.Dispatch<React.SetStateAction<LivestreamState>>
   updateState: (updates: Partial<LivestreamState>) => void
-  
-  // Individual state getters and setters
   isStreaming: boolean
   setIsStreaming: (value: boolean) => void
   isLive: boolean
@@ -50,21 +41,17 @@ interface LivestreamContextType {
   setViewerCount: (value: number) => void
   connectionStatus: 'idle' | 'connecting' | 'connected' | 'failed'
   setConnectionStatus: (value: 'idle' | 'connecting' | 'connected' | 'failed') => void
-  remoteUsers: RemoteUserEntry[]
-  setRemoteUsers: (value: RemoteUserEntry[]) => void
+  remoteUsers: any[]
+  setRemoteUsers: (value: any[]) => void
   currentStreamId: string | null
   setCurrentStreamId: (value: string | null) => void
-  
-  // Livestream functions
+  localTracks: any
+  toggleVideo: () => void
+  toggleAudio: () => void
   startStream: (privacy: 'public' | 'friends-only', title?: string, description?: string) => Promise<void>
   stopStream: () => Promise<void>
   joinStream: (streamerId: string) => Promise<void>
   leaveStream: () => Promise<void>
-  
-  // Additional properties for streamer component
-  localTracks: { video: ICameraVideoTrack | null; audio: IMicrophoneAudioTrack | null }
-  toggleVideo: () => void
-  toggleAudio: () => void
 }
 
 const LivestreamContext = createContext<LivestreamContextType | undefined>(undefined)
@@ -91,120 +78,93 @@ export function LivestreamProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, ...updates }))
   }
 
-  // Individual getters and setters
-  const setIsStreaming = (value: boolean) => setState(prev => ({ ...prev, isStreaming: value }))
-  const setIsLive = (value: boolean) => setState(prev => ({ ...prev, isLive: value }))
-  const setIsViewing = (value: boolean) => setState(prev => ({ ...prev, isViewing: value }))
-  const setTitle = (value: string | null) => setState(prev => ({ ...prev, title: value }))
-  const setDescription = (value: string | null) => setState(prev => ({ ...prev, description: value }))
-  const setPrivacy = (value: 'public' | 'friends-only' | null) => setState(prev => ({ ...prev, privacy: value }))
-  const setStreamerId = (value: string | null) => setState(prev => ({ ...prev, streamerId: value }))
-  const setStreamerName = (value: string | null) => setState(prev => ({ ...prev, streamerName: value }))
-  const setViewerCount = (value: number) => setState(prev => ({ ...prev, viewerCount: value }))
-  const setConnectionStatus = (value: 'idle' | 'connecting' | 'connected' | 'failed') => setState(prev => ({ ...prev, connectionStatus: value }))
-  const setRemoteUsers = (value: RemoteUserEntry[]) => setState(prev => ({ ...prev, remoteUsers: value }))
-  const setCurrentStreamId = (value: string | null) => setState(prev => ({ ...prev, currentStreamId: value }))
+  // Individual getters and setters (derived from updateState)
+  const setIsStreaming = (value: boolean) => updateState({ isStreaming: value })
+  const setIsLive = (value: boolean) => updateState({ isLive: value })
+  const setIsViewing = (value: boolean) => updateState({ isViewing: value })
+  const setTitle = (value: string | null) => updateState({ title: value })
+  const setDescription = (value: string | null) => updateState({ description: value })
+  const setPrivacy = (value: 'public' | 'friends-only' | null) => updateState({ privacy: value })
+  const setStreamerId = (value: string | null) => updateState({ streamerId: value })
+  const setStreamerName = (value: string | null) => updateState({ streamerName: value })
+  const setViewerCount = (value: number) => updateState({ viewerCount: value })
+  const setConnectionStatus = (value: 'idle' | 'connecting' | 'connected' | 'failed') => updateState({ connectionStatus: value })
+  const setRemoteUsers = (value: any[]) => updateState({ remoteUsers: value })
+  const setCurrentStreamId = (value: string | null) => updateState({ currentStreamId: value })
 
-  // Livestream functions
+  // Placeholder functions for now
   const startStream = async (privacy: 'public' | 'friends-only', title?: string, description?: string) => {
-    // Placeholder for actual implementation
-    console.log('Starting stream with privacy:', privacy, 'title:', title, 'description:', description);
-    setIsStreaming(true);
-    setIsLive(true);
-    setPrivacy(privacy);
-    setTitle(title || 'New Stream');
-    setDescription(description || 'No description provided');
-    setStreamerId('placeholder-streamer-id'); // Replace with actual streamer ID
-    setStreamerName('Placeholder Streamer'); // Replace with actual streamer name
-    setViewerCount(0);
-    setConnectionStatus('connected');
-    setRemoteUsers([]);
-    setCurrentStreamId('placeholder-stream-id'); // Replace with actual stream ID
-  };
+    console.log('Starting stream with privacy:', privacy, 'title:', title, 'description:', description)
+    setIsStreaming(true)
+    setIsLive(true)
+    setPrivacy(privacy)
+    setTitle(title || 'New Stream')
+    setDescription(description || 'No description provided')
+    setStreamerId('placeholder-streamer-id')
+    setStreamerName('Placeholder Streamer')
+    setViewerCount(0)
+    setConnectionStatus('connected')
+    setRemoteUsers([])
+    setCurrentStreamId('placeholder-stream-id')
+  }
 
   const stopStream = async () => {
-    // Placeholder for actual implementation
-    console.log('Stopping stream');
-    setIsStreaming(false);
-    setIsLive(false);
-    setPrivacy(null);
-    setTitle(null);
-    setDescription(null);
-    setStreamerId(null);
-    setStreamerName(null);
-    setViewerCount(0);
-    setConnectionStatus('idle');
-    setRemoteUsers([]);
-    setCurrentStreamId(null);
-  };
+    console.log('Stopping stream')
+    setIsStreaming(false)
+    setIsLive(false)
+    setPrivacy(null)
+    setTitle(null)
+    setDescription(null)
+    setStreamerId(null)
+    setStreamerName(null)
+    setViewerCount(0)
+    setConnectionStatus('idle')
+    setRemoteUsers([])
+    setCurrentStreamId(null)
+  }
 
   const joinStream = async (streamerId: string) => {
-    // Placeholder for actual implementation
-    console.log('Joining stream with streamerId:', streamerId);
-    setIsViewing(true);
-    setStreamerId(streamerId);
-    setStreamerName('Streamer ' + streamerId); // Placeholder
-    setViewerCount(0); // Placeholder
-    setConnectionStatus('connected');
-    setRemoteUsers([]); // Placeholder
-    setCurrentStreamId('placeholder-stream-id'); // Placeholder
-  };
+    console.log('Joining stream with streamerId:', streamerId)
+    setIsViewing(true)
+    setStreamerId(streamerId)
+    setStreamerName('Streamer ' + streamerId)
+    setViewerCount(0)
+    setConnectionStatus('connected')
+    setRemoteUsers([])
+    setCurrentStreamId('placeholder-stream-id')
+  }
 
   const leaveStream = async () => {
-    // Placeholder for actual implementation
-    console.log('Leaving stream');
-    setIsViewing(false);
-    setStreamerId(null);
-    setStreamerName(null);
-    setViewerCount(0);
-    setConnectionStatus('idle');
-    setRemoteUsers([]);
-    setCurrentStreamId(null);
-  };
+    console.log('Leaving stream')
+    setIsViewing(false)
+    setStreamerId(null)
+    setStreamerName(null)
+    setViewerCount(0)
+    setConnectionStatus('idle')
+    setRemoteUsers([])
+    setCurrentStreamId(null)
+  }
 
-  // Additional properties for streamer component
-  const localTracks = { video: null, audio: null }; // Placeholder - will be set by actual implementation
-  const toggleVideo = () => console.log('Toggle video clicked'); // Placeholder
-  const toggleAudio = () => console.log('Toggle audio clicked'); // Placeholder
+  const localTracks = { video: null, audio: null }
+  const toggleVideo = () => console.log('Toggle video clicked')
+  const toggleAudio = () => console.log('Toggle audio clicked')
 
   const contextValue: LivestreamContextType = {
-    state,
-    setState,
-    updateState,
-    // Individual getters and setters
-    isStreaming: state.isStreaming,
-    setIsStreaming,
-    isLive: state.isLive,
-    setIsLive,
-    isViewing: state.isViewing,
-    setIsViewing,
-    title: state.title,
-    setTitle,
-    description: state.description,
-    setDescription,
-    privacy: state.privacy,
-    setPrivacy,
-    streamerId: state.streamerId,
-    setStreamerId,
-    streamerName: state.streamerName,
-    setStreamerName,
-    viewerCount: state.viewerCount,
-    setViewerCount,
-    connectionStatus: state.connectionStatus,
-    setConnectionStatus,
-    remoteUsers: state.remoteUsers,
-    setRemoteUsers,
-    currentStreamId: state.currentStreamId,
-    setCurrentStreamId,
-    // Livestream functions
-    startStream,
-    stopStream,
-    joinStream,
-    leaveStream,
-    // Additional properties for streamer component
-    localTracks,
-    toggleVideo,
-    toggleAudio,
+    state, setState, updateState,
+    isStreaming: state.isStreaming, setIsStreaming,
+    isLive: state.isLive, setIsLive,
+    isViewing: state.isViewing, setIsViewing,
+    title: state.title, setTitle,
+    description: state.description, setDescription,
+    privacy: state.privacy, setPrivacy,
+    streamerId: state.streamerId, setStreamerId,
+    streamerName: state.streamerName, setStreamerName,
+    viewerCount: state.viewerCount, setViewerCount,
+    connectionStatus: state.connectionStatus, setConnectionStatus,
+    remoteUsers: state.remoteUsers, setRemoteUsers,
+    currentStreamId: state.currentStreamId, setCurrentStreamId,
+    startStream, stopStream, joinStream, leaveStream,
+    localTracks, toggleVideo, toggleAudio,
   }
 
   return (
