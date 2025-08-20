@@ -57,6 +57,16 @@ export default function DashboardPage() {
     connectionStatus
   } = usePersonalLivestream()
 
+  // Debug hook values immediately after destructuring
+  console.log('🔍 Hook values right after destructuring:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
+
+  // Force re-render when hook state changes
+  const [forceUpdate, setForceUpdate] = useState(0)
+  
+  useEffect(() => {
+    setForceUpdate(prev => prev + 1)
+  }, [hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus])
+
   // Debug connection status
   useEffect(() => {
     console.log('🔍 Dashboard connection status:', connectionStatus)
@@ -419,7 +429,7 @@ export default function DashboardPage() {
 
         {/* Personal Livestream Components */}
         {(() => {
-          console.log('🔍 About to render livestream components:', { hookIsStreaming, hookIsViewing })
+          console.log('🔍 About to render livestream components:', { hookIsStreaming, hookIsViewing, forceUpdate })
           return hookIsStreaming ? (
             <PersonalLivestreamStreamer onClose={() => {}} />
           ) : hookIsViewing ? (
