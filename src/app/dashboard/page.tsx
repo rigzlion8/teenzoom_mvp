@@ -62,6 +62,11 @@ export default function DashboardPage() {
     console.log('🔍 Dashboard connection status:', connectionStatus)
   }, [connectionStatus])
 
+  // Debug streaming state
+  useEffect(() => {
+    console.log('🔍 Dashboard streaming state:', { hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount })
+  }, [hookIsStreaming, hookIsViewing, streamTitle, streamPrivacy, streamViewerCount])
+
   const checkCurrentStream = useCallback(async () => {
     try {
       const response = await fetch('/api/livestream/personal')
@@ -413,11 +418,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Personal Livestream Components */}
-        {hookIsStreaming ? (
-          <PersonalLivestreamStreamer onClose={() => {}} />
-        ) : hookIsViewing ? (
-          <PersonalLivestreamViewer onClose={() => {}} />
-        ) : null}
+        {(() => {
+          console.log('🔍 About to render livestream components:', { hookIsStreaming, hookIsViewing })
+          return hookIsStreaming ? (
+            <PersonalLivestreamStreamer onClose={() => {}} />
+          ) : hookIsViewing ? (
+            <PersonalLivestreamViewer onClose={() => {}} />
+          ) : null
+        })()}
       </div>
     </div>
   )
