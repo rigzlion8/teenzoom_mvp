@@ -57,29 +57,10 @@ export default function DashboardPage() {
     connectionStatus
   } = useLivestreamContext()
 
-  // Debug hook values immediately after destructuring
-  console.log('🔍 Hook values right after destructuring:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
-
-  // Force re-render when hook state changes
-  const [forceUpdate, setForceUpdate] = useState(0)
-  
-  useEffect(() => {
-    console.log('🔄 Force update triggered:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
-    setForceUpdate(prev => prev + 1)
-  }, [isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus])
-
-  // Log every render
-  console.log('🔄 Dashboard component rendered:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus, forceUpdate })
-
-  // Debug connection status
-  useEffect(() => {
-    console.log('🔍 Dashboard connection status:', connectionStatus)
-  }, [connectionStatus])
-
-  // Debug streaming state
-  useEffect(() => {
-    console.log('🔍 Dashboard streaming state:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount })
-  }, [isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount])
+  // Debug hook values (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Dashboard state:', { isStreaming, isViewing, streamTitle, streamPrivacy, streamViewerCount, connectionStatus })
+  }
 
   const checkCurrentStream = useCallback(async () => {
     try {
@@ -433,7 +414,7 @@ export default function DashboardPage() {
 
         {/* Personal Livestream Components */}
         {(() => {
-          console.log('🔍 About to render livestream components:', { isStreaming, isViewing, forceUpdate })
+          console.log('🔍 About to render livestream components:', { isStreaming, isViewing })
           return isStreaming ? (
             <PersonalLivestreamStreamer onClose={() => {}} />
           ) : isViewing ? (

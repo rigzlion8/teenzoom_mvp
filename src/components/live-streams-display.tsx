@@ -77,20 +77,16 @@ export function LiveStreamsDisplay({ type, title, description }: LiveStreamsDisp
   }, [loadLiveStreams])
 
   useEffect(() => {
-    // Only load if not already loading
-    if (!isLoading) {
-      loadLiveStreams()
-    }
+    // Initial load
+    loadLiveStreams()
     
     // Refresh every 30 seconds
     const interval = setInterval(() => {
-      if (!isLoading) {
-        loadLiveStreams()
-      }
+      loadLiveStreams()
     }, 30000)
     
     return () => clearInterval(interval)
-  }, [loadLiveStreams, isLoading])
+  }, [loadLiveStreams])
 
   const handleJoinStream = async (stream: LiveStream) => {
     try {

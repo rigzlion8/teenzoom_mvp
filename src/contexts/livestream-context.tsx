@@ -4,6 +4,17 @@ import React, { createContext, useContext, useState, ReactNode, useRef, useCallb
 import { useSession } from 'next-auth/react'
 import { useSocket } from '@/hooks/use-socket'
 
+// Dynamic import for Agora SDK
+let AgoraRTC: any = null
+if (typeof window !== 'undefined') {
+  import('agora-rtc-sdk-ng').then(module => {
+    AgoraRTC = module.default
+  })
+}
+
+// Import token generation functions
+import { generateAudienceToken } from '@/lib/agora'
+
 interface LivestreamState {
   isStreaming: boolean
   isLive: boolean
@@ -233,14 +244,83 @@ export function LivestreamProvider({ children }: { children: ReactNode }) {
   }
 
   const joinStream = async (streamerId: string) => {
-    console.log('Joining stream with streamerId:', streamerId)
-    setIsViewing(true)
-    setStreamerId(streamerId)
-    setStreamerName('Streamer ' + streamerId)
-    setViewerCount(0)
-    setConnectionStatus('connected')
-    setRemoteUsers([])
-    setCurrentStreamId('placeholder-stream-id')
+    try {
+      console.log('Joining stream with streamerId:', streamerId)
+      setConnectionStatus('connecting')
+      
+      // Get the stream info from the backend
+      const response = await fetch(`/api/livestream/personal?streamerId=${streamerId}`)
+      if (!response.ok) {
+        throw new Error('Failed to get stream info')
+      }
+      
+      const streamData = await response.json()
+      const stream = streamData.livestreams?.find((s: any) => s.streamer.id === streamerId && s.isLive)
+      
+      if (!stream) {
+        throw new Error('Stream not found or not live')
+      }
+      
+      // Set stream info
+      setStreamerId(streamerId)
+      setStreamerName(stream.streamer.displayName || stream.streamer.username)
+      setTitle(stream.title)
+      setDescription(stream.description)
+      setPrivacy(stream.privacy)
+      setViewerCount(stream.viewerCount || 0)
+      setCurrentStreamId(stream.id)
+      
+      // Join Agora channel as viewer
+      if (!agoraClientRef.current) {
+        agoraClientRef.current = AgoraRTC.default.createClient({ mode: 'live', codec: 'vp8' })
+      }
+      
+      const client = agoraClientRef.current
+      
+      // Subscribe to streamer's tracks
+      client.on('user-published', async (user: any, mediaType: any) => {
+        await client.subscribe(user, mediaType)
+        
+        if (mediaType === 'video') {
+          updateState({ 
+            remoteUsers: [...state.remoteUsers, { uid: user.uid, videoTrack: user.videoTrack, audioTrack: null }]
+          })
+        }
+        if (mediaType === 'audio') {
+          updateState({
+            remoteUsers: state.remoteUsers.map((u: any) => 
+              u.uid === user.uid ? { ...u, audioTrack: user.audioTrack } : u
+            )
+          })
+        }
+      })
+      
+      client.on('user-unpublished', (user: any) => {
+        updateState({
+          remoteUsers: state.remoteUsers.filter((u: any) => u.uid !== user.uid)
+        })
+      })
+      
+      // Join the channel
+      const token = generateAudienceToken(stream.id, session?.user?.id || 'anonymous')
+      await client.join(process.env.NEXT_PUBLIC_AGORA_APP_ID!, stream.id, token, streamerId)
+      
+      setConnectionStatus('connected')
+      setIsViewing(true)
+      
+      console.log('Successfully joined stream as viewer')
+      
+      // Emit socket event for viewer joined
+      if (socket && isConnected) {
+        socket.emit('viewer-joined', { streamId: stream.id, viewerId: session?.user?.id })
+      }
+      
+    } catch (error) {
+      console.error('Failed to join stream:', error)
+      setConnectionStatus('failed')
+      setIsViewing(false)
+      throw error
+    }
   }
 
   const leaveStream = async () => {
